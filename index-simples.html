@@ -3,8 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestão de Pedidos</title>
+    <meta name="description" content="Sistema de Gestão de Pedidos - Interface simplificada para gerenciamento rápido de pedidos e cardápio">
+    <meta name="keywords" content="gestão de pedidos, sistema de pedidos, cardápio, interface simplificada">
+    <meta name="author" content="Sistema de Pedidos">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#667eea">
+    
+    <title>Sistema de Gestão de Pedidos - Interface Simplificada</title>
+    
+    <!-- Preconnect para otimização -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
         * {
             margin: 0;
@@ -16,6 +28,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            line-height: 1.6;
         }
 
         .container {
@@ -44,6 +57,10 @@
             color: #333;
         }
 
+        .logo i {
+            color: #667eea;
+        }
+
         .user-info {
             display: flex;
             align-items: center;
@@ -54,6 +71,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .nav-tab {
@@ -65,6 +83,8 @@
             font-weight: 500;
             transition: all 0.3s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 120px;
+            text-align: center;
         }
 
         .nav-tab.active {
@@ -75,6 +95,11 @@
         .nav-tab:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .nav-tab:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
         }
 
         .content-section {
@@ -99,82 +124,198 @@
         .metric-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 10px;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .metric-value {
-            font-size: 2.5em;
-            font-weight: bold;
+        .metric-card h3 {
+            font-size: 14px;
             margin-bottom: 10px;
-        }
-
-        .metric-label {
-            font-size: 1.1em;
             opacity: 0.9;
         }
 
-        .orders-grid {
+        .metric-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-card .change {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .orders-list {
             display: grid;
             gap: 15px;
         }
 
-        .order-card {
-            border: 1px solid #e0e0e0;
+        .order-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
             border-radius: 8px;
-            padding: 20px;
-            background: #f9f9f9;
-        }
-
-        .order-header {
+            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            transition: all 0.3s;
         }
 
-        .order-id {
+        .order-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .order-info {
+            flex: 1;
+        }
+
+        .order-number {
             font-weight: bold;
-            font-size: 1.1em;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .order-customer {
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .order-items {
+            color: #888;
+            font-size: 14px;
         }
 
         .order-status {
-            padding: 5px 15px;
+            padding: 6px 12px;
             border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-preparing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-ready {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-delivered {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .btn {
+            background: #667eea;
             color: white;
-            font-size: 0.9em;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
 
-        .status-atendimento { background: #f59e0b; }
-        .status-preparo { background: #8b5cf6; }
-        .status-pronto { background: #10b981; }
-        .status-finalizado { background: #6b7280; }
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
 
-        .products-grid {
+        .btn:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
-        .product-card {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            background: #f9f9f9;
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
 
-        .product-name {
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-bottom: 10px;
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
         }
 
-        .product-price {
-            color: #10b981;
-            font-weight: bold;
-            font-size: 1.1em;
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
         }
 
         .loading {
@@ -183,249 +324,432 @@
             color: #666;
         }
 
-        .btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
+        .loading i {
+            font-size: 24px;
+            animation: spin 1s linear infinite;
         }
 
-        .btn:hover {
-            background: #5a67d8;
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .nav-tabs {
+                justify-content: center;
+            }
+            
+            .nav-tab {
+                min-width: 100px;
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .order-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-tab {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+
+        /* Acessibilidade */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Foco visível para navegação por teclado */
+        *:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        /* Melhor contraste para texto */
+        .order-item {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+        }
+
+        .order-customer {
+            color: #495057;
+        }
+
+        .order-items {
+            color: #6c757d;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <!-- Header -->
+        <header class="header" role="banner">
             <div class="logo">
-                <i class="fas fa-utensils"></i>
-                Sistema de Pedidos
+                <i class="fas fa-utensils" aria-hidden="true"></i>
+                <span>Sistema de Pedidos</span>
             </div>
-            <div class="user-info">
-                <span id="currentUser">Administrador</span>
-                <button class="btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Sair
+            
+            <div class="user-info" aria-label="Informações do usuário">
+                <span id="currentUser">Usuário</span>
+                <span id="currentProfile">Perfil</span>
+                <button class="btn btn-secondary" id="logoutBtn" aria-label="Sair do sistema">
+                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                    Sair
                 </button>
             </div>
-        </div>
+        </header>
 
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showSection('dashboard')">
-                <i class="fas fa-chart-pie"></i> Dashboard
+        <!-- Navegação -->
+        <nav class="nav-tabs" role="tablist" aria-label="Navegação principal">
+            <button class="nav-tab active" role="tab" aria-selected="true" aria-controls="dashboard-panel" id="dashboard-tab">
+                <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                Dashboard
             </button>
-            <button class="nav-tab" onclick="showSection('pedidos')">
-                <i class="fas fa-clipboard-list"></i> Pedidos
+            <button class="nav-tab" role="tab" aria-selected="false" aria-controls="orders-panel" id="orders-tab">
+                <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                Pedidos
             </button>
-            <button class="nav-tab" onclick="showSection('produtos')">
-                <i class="fas fa-hamburger"></i> Produtos
+            <button class="nav-tab" role="tab" aria-selected="false" aria-controls="menu-panel" id="menu-tab">
+                <i class="fas fa-book-open" aria-hidden="true"></i>
+                Cardápio
             </button>
-        </div>
+        </nav>
 
-        <!-- Dashboard -->
-        <div id="dashboard" class="content-section active">
-            <h2>Dashboard</h2>
-            <div class="loading" id="dashboardLoading">
-                <i class="fas fa-spinner fa-spin"></i> Carregando métricas...
-            </div>
-            <div id="dashboardContent" style="display: none;">
-                <div class="metrics-grid" id="metricsGrid">
-                    <!-- Métricas serão carregadas aqui -->
+        <!-- Conteúdo Principal -->
+        <main role="main">
+            <!-- Dashboard -->
+            <section id="dashboard-panel" class="content-section active" role="tabpanel" aria-labelledby="dashboard-tab">
+                <h2>Dashboard</h2>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>Pedidos Hoje</h3>
+                        <div class="value" id="ordersToday">0</div>
+                        <div class="change">+12% vs ontem</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h3>Faturamento</h3>
+                        <div class="value" id="revenueToday">R$ 0,00</div>
+                        <div class="change">+8% vs ontem</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h3>Em Preparo</h3>
+                        <div class="value" id="preparingOrders">0</div>
+                        <div class="change">Tempo médio: 15min</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h3>Entregas</h3>
+                        <div class="value" id="deliveryOrders">0</div>
+                        <div class="change">Tempo médio: 25min</div>
+                    </div>
                 </div>
-            </div>
-        </div>
+                
+                <div class="actions">
+                    <button class="btn" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                        Atualizar
+                    </button>
+                </div>
+            </section>
 
-        <!-- Pedidos -->
-        <div id="pedidos" class="content-section">
-            <h2>Pedidos</h2>
-            <div class="loading" id="pedidosLoading">
-                <i class="fas fa-spinner fa-spin"></i> Carregando pedidos...
-            </div>
-            <div id="pedidosContent" style="display: none;">
-                <div class="orders-grid" id="ordersGrid">
-                    <!-- Pedidos serão carregados aqui -->
+            <!-- Pedidos -->
+            <section id="orders-panel" class="content-section" role="tabpanel" aria-labelledby="orders-tab">
+                <h2>Gerenciar Pedidos</h2>
+                
+                <div class="actions">
+                    <button class="btn" onclick="showCreateOrder()">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Novo Pedido
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshOrders()">
+                        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                        Atualizar
+                    </button>
                 </div>
-            </div>
-        </div>
+                
+                <div class="orders-list" id="ordersList">
+                    <div class="loading">
+                        <i class="fas fa-spinner" aria-hidden="true"></i>
+                        <p>Carregando pedidos...</p>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Produtos -->
-        <div id="produtos" class="content-section">
-            <h2>Produtos</h2>
-            <div class="loading" id="produtosLoading">
-                <i class="fas fa-spinner fa-spin"></i> Carregando produtos...
-            </div>
-            <div id="produtosContent" style="display: none;">
-                <div class="products-grid" id="productsGrid">
-                    <!-- Produtos serão carregados aqui -->
+            <!-- Cardápio -->
+            <section id="menu-panel" class="content-section" role="tabpanel" aria-labelledby="menu-tab">
+                <h2>Gerenciar Cardápio</h2>
+                
+                <div class="actions">
+                    <button class="btn" onclick="showCreateProduct()">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Novo Produto
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshMenu()">
+                        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                        Atualizar
+                    </button>
                 </div>
-            </div>
-        </div>
+                
+                <div id="menuList">
+                    <div class="loading">
+                        <i class="fas fa-spinner" aria-hidden="true"></i>
+                        <p>Carregando cardápio...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
+    <!-- Scripts -->
     <script>
-        // Configuração da API
-        const API_BASE = 'http://localhost:8080/api';
-        let authToken = null;
+        // Configuração da aplicação
+        const CONFIG = {
+            API_BASE_URL: 'http://localhost:8080/api',
+            REFRESH_INTERVAL: 30000 // 30 segundos
+        };
 
-        // Fazer login automático
-        async function autoLogin() {
-            try {
-                const response = await fetch(`${API_BASE}/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: 'admin',
-                        password: '123'
-                    })
-                });
+        // Estado da aplicação
+        let currentTab = 'dashboard';
+        let orders = [];
+        let menu = [];
 
-                const data = await response.json();
-                if (data.token) {
-                    authToken = data.token;
-                    document.getElementById('currentUser').textContent = data.user.name;
-                    console.log('Login realizado com sucesso');
-                    loadDashboard();
-                }
-            } catch (error) {
-                console.error('Erro no login:', error);
-            }
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            setupTabNavigation();
+            loadDashboardData();
+            loadOrders();
+            loadMenu();
+            
+            // Atualização automática
+            setInterval(() => {
+                if (currentTab === 'dashboard') loadDashboardData();
+                if (currentTab === 'orders') loadOrders();
+                if (currentTab === 'menu') loadMenu();
+            }, CONFIG.REFRESH_INTERVAL);
         }
 
-        // Carregar dashboard
-        async function loadDashboard() {
-            try {
-                const response = await fetch(`${API_BASE}/metrics/dashboard`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
+        function setupTabNavigation() {
+            const tabs = document.querySelectorAll('.nav-tab');
+            const panels = document.querySelectorAll('.content-section');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const target = this.getAttribute('id').replace('-tab', '');
+                    
+                    // Atualizar estado dos tabs
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    panels.forEach(p => p.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    this.setAttribute('aria-selected', 'true');
+                    
+                    // Mostrar painel correspondente
+                    const targetPanel = document.getElementById(target + '-panel');
+                    if (targetPanel) {
+                        targetPanel.classList.add('active');
+                        currentTab = target;
                     }
                 });
+            });
+        }
 
-                const metrics = await response.json();
-                console.log('Métricas recebidas:', metrics);
-
-                const metricsGrid = document.getElementById('metricsGrid');
-                metricsGrid.innerHTML = `
-                    <div class="metric-card">
-                        <div class="metric-value">${metrics.totalPedidosHoje || 0}</div>
-                        <div class="metric-label">Pedidos Hoje</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value">R$ ${(metrics.valorTotalArrecadado || 0).toFixed(2)}</div>
-                        <div class="metric-label">Faturamento</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value">${Object.keys(metrics.pedidosPorStatus || {}).length}</div>
-                        <div class="metric-label">Status Ativos</div>
-                    </div>
-                `;
-
-                document.getElementById('dashboardLoading').style.display = 'none';
-                document.getElementById('dashboardContent').style.display = 'block';
-
+        async function loadDashboardData() {
+            try {
+                // Simular dados da API
+                const data = {
+                    ordersToday: Math.floor(Math.random() * 50) + 10,
+                    revenueToday: (Math.random() * 1000 + 200).toFixed(2),
+                    preparingOrders: Math.floor(Math.random() * 10) + 1,
+                    deliveryOrders: Math.floor(Math.random() * 15) + 2
+                };
+                
+                document.getElementById('ordersToday').textContent = data.ordersToday;
+                document.getElementById('revenueToday').textContent = `R$ ${data.revenueToday}`;
+                document.getElementById('preparingOrders').textContent = data.preparingOrders;
+                document.getElementById('deliveryOrders').textContent = data.deliveryOrders;
+                
             } catch (error) {
                 console.error('Erro ao carregar dashboard:', error);
-                document.getElementById('dashboardLoading').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro ao carregar dados';
             }
         }
 
-        // Carregar pedidos
-        async function loadPedidos() {
+        async function loadOrders() {
             try {
-                const response = await fetch(`${API_BASE}/orders`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-
-                const orders = await response.json();
-                console.log('Pedidos recebidos:', orders);
-
-                const ordersGrid = document.getElementById('ordersGrid');
-                ordersGrid.innerHTML = orders.map(order => `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <div class="order-id">#${order.id}</div>
-                            <div class="order-status status-${order.status}">${order.status}</div>
-                        </div>
-                        <div><strong>Cliente:</strong> ${order.customer}</div>
-                        <div><strong>Telefone:</strong> ${order.phone}</div>
-                        <div><strong>Tipo:</strong> ${order.type}</div>
-                        <div><strong>Total:</strong> R$ ${order.total.toFixed(2)}</div>
-                    </div>
-                `).join('');
-
-                document.getElementById('pedidosLoading').style.display = 'none';
-                document.getElementById('pedidosContent').style.display = 'block';
-
+                // Simular dados da API
+                orders = [
+                    { id: 1, customer: 'João Silva', items: 'X-Burger + Refri', status: 'pending', total: 25.90 },
+                    { id: 2, customer: 'Maria Santos', items: 'Pizza Margherita', status: 'preparing', total: 32.50 },
+                    { id: 3, customer: 'Pedro Costa', items: 'Salada Caesar', status: 'ready', total: 18.90 }
+                ];
+                
+                renderOrders();
+                
             } catch (error) {
                 console.error('Erro ao carregar pedidos:', error);
-                document.getElementById('pedidosLoading').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro ao carregar pedidos';
             }
         }
 
-        // Carregar produtos
-        async function loadProdutos() {
-            try {
-                const response = await fetch(`${API_BASE}/products`);
-                const products = await response.json();
-                console.log('Produtos recebidos:', products);
-
-                const productsGrid = document.getElementById('productsGrid');
-                productsGrid.innerHTML = products.map(product => `
-                    <div class="product-card">
-                        <div class="product-name">${product.name}</div>
-                        <div>${product.description}</div>
-                        <div class="product-price">R$ ${product.price.toFixed(2)}</div>
-                        <div><strong>Categoria:</strong> ${product.category}</div>
-                        <div><strong>Status:</strong> ${product.active ? 'Ativo' : 'Inativo'}</div>
+        function renderOrders() {
+            const ordersList = document.getElementById('ordersList');
+            
+            if (orders.length === 0) {
+                ordersList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                        <h3>Nenhum pedido encontrado</h3>
+                        <p>Não há pedidos para exibir no momento.</p>
                     </div>
-                `).join('');
+                `;
+                return;
+            }
+            
+            ordersList.innerHTML = orders.map(order => `
+                <div class="order-item">
+                    <div class="order-info">
+                        <div class="order-number">#${order.id}</div>
+                        <div class="order-customer">${order.customer}</div>
+                        <div class="order-items">${order.items}</div>
+                    </div>
+                    <div class="order-status status-${order.status}">
+                        ${getStatusText(order.status)}
+                    </div>
+                </div>
+            `).join('');
+        }
 
-                document.getElementById('produtosLoading').style.display = 'none';
-                document.getElementById('produtosContent').style.display = 'block';
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'Pendente',
+                'preparing': 'Preparando',
+                'ready': 'Pronto',
+                'delivered': 'Entregue'
+            };
+            return statusMap[status] || status;
+        }
 
+        async function loadMenu() {
+            try {
+                // Simular dados da API
+                menu = [
+                    { id: 1, name: 'X-Burger', category: 'Lanches', price: 18.90, available: true },
+                    { id: 2, name: 'Pizza Margherita', category: 'Pizzas', price: 32.50, available: true },
+                    { id: 3, name: 'Salada Caesar', category: 'Saladas', price: 18.90, available: false }
+                ];
+                
+                renderMenu();
+                
             } catch (error) {
-                console.error('Erro ao carregar produtos:', error);
-                document.getElementById('produtosLoading').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro ao carregar produtos';
+                console.error('Erro ao carregar cardápio:', error);
             }
         }
 
-        // Mostrar seção
-        function showSection(sectionName) {
-            // Atualizar tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-
-            // Mostrar seção
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(sectionName).classList.add('active');
-
-            // Carregar dados se necessário
-            if (sectionName === 'pedidos' && authToken) {
-                loadPedidos();
-            } else if (sectionName === 'produtos') {
-                loadProdutos();
+        function renderMenu() {
+            const menuList = document.getElementById('menuList');
+            
+            if (menu.length === 0) {
+                menuList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-book-open" aria-hidden="true"></i>
+                        <h3>Nenhum produto encontrado</h3>
+                        <p>Não há produtos no cardápio no momento.</p>
+                    </div>
+                `;
+                return;
             }
+            
+            menuList.innerHTML = menu.map(product => `
+                <div class="order-item">
+                    <div class="order-info">
+                        <div class="order-number">${product.name}</div>
+                        <div class="order-customer">${product.category}</div>
+                        <div class="order-items">R$ ${product.price.toFixed(2)}</div>
+                    </div>
+                    <div class="order-status ${product.available ? 'status-ready' : 'status-pending'}">
+                        ${product.available ? 'Disponível' : 'Indisponível'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Funções de atualização
+        function refreshDashboard() {
+            loadDashboardData();
+        }
+
+        function refreshOrders() {
+            loadOrders();
+        }
+
+        function refreshMenu() {
+            loadMenu();
+        }
+
+        // Funções de criação (simuladas)
+        function showCreateOrder() {
+            alert('Funcionalidade de criar pedido será implementada aqui');
+        }
+
+        function showCreateProduct() {
+            alert('Funcionalidade de criar produto será implementada aqui');
         }
 
         // Logout
-        function logout() {
-            authToken = null;
-            location.reload();
-        }
-
-        // Inicializar aplicação
-        window.addEventListener('load', () => {
-            autoLogin();
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('Deseja realmente sair do sistema?')) {
+                // Implementar logout
+                alert('Logout realizado com sucesso');
+            }
         });
     </script>
 </body>

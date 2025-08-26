@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste do Sistema</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste do Sistema de Gestão de Pedidos</h1>
+    
+    <div class="test-section">
+        <h2>Status dos Módulos</h2>
+        <div id="moduleStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Testes de Funcionalidade</h2>
+        <button onclick="testDashboard()">Testar Dashboard</button>
+        <button onclick="testPedidos()">Testar Pedidos</button>
+        <button onclick="testAPI()">Testar API</button>
+        <button onclick="testUI()">Testar UI</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Log de Testes</h2>
+        <div id="testLog" class="log"></div>
+        <button onclick="clearLog()">Limpar Log</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="ui.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="pedidos.js"></script>
+    <script src="cardapio.js"></script>
+    <script src="relatorios.js"></script>
+    <script src="perfis.js"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logDiv.textContent += logEntry;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('testLog').textContent = '';
+        }
+
+        function updateModuleStatus() {
+            const statusDiv = document.getElementById('moduleStatus');
+            const modules = [
+                'CONFIG', 'API', 'AuthManager', 'UIManager', 
+                'DashboardManager', 'PedidosManager', 'CardapioManager',
+                'RelatoriosManager', 'PerfisManager', 'App'
+            ];
+            
+            let statusHTML = '';
+            modules.forEach(module => {
+                const exists = window[module] !== undefined;
+                const status = exists ? '✅ Carregado' : '❌ Não carregado';
+                const className = exists ? 'success' : 'error';
+                statusHTML += `<div class="${className}">${module}: ${status}</div>`;
+            });
+            
+            statusDiv.innerHTML = statusHTML;
+        }
+
+        function testDashboard() {
+            log('Testando Dashboard...');
+            try {
+                if (window.DashboardManager) {
+                    log('DashboardManager encontrado', 'success');
+                    if (window.DashboardManager.init) {
+                        log('Método init disponível', 'success');
+                    } else {
+                        log('Método init não encontrado', 'error');
+                    }
+                } else {
+                    log('DashboardManager não encontrado', 'error');
+                }
+            } catch (error) {
+                log(`Erro ao testar Dashboard: ${error.message}`, 'error');
+            }
+        }
+
+        function testPedidos() {
+            log('Testando Pedidos...');
+            try {
+                if (window.PedidosManager) {
+                    log('PedidosManager encontrado', 'success');
+                    if (window.PedidosManager.init) {
+                        log('Método init disponível', 'success');
+                    } else {
+                        log('Método init não encontrado', 'error');
+                    }
+                } else {
+                    log('PedidosManager não encontrado', 'error');
+                }
+            } catch (error) {
+                log(`Erro ao testar Pedidos: ${error.message}`, 'error');
+            }
+        }
+
+        function testAPI() {
+            log('Testando API...');
+            try {
+                if (window.API) {
+                    log('API encontrada', 'success');
+                    if (window.API.request) {
+                        log('Método request disponível', 'success');
+                    } else {
+                        log('Método request não encontrado', 'error');
+                    }
+                } else {
+                    log('API não encontrada', 'error');
+                }
+            } catch (error) {
+                log(`Erro ao testar API: ${error.message}`, 'error');
+            }
+        }
+
+        function testUI() {
+            log('Testando UI...');
+            try {
+                if (window.UI) {
+                    log('UI encontrada', 'success');
+                    if (window.UI.showToast) {
+                        log('Método showToast disponível', 'success');
+                        // Testar toast
+                        window.UI.showToast('Teste de toast!', 'info');
+                        log('Toast testado com sucesso', 'success');
+                    } else {
+                        log('Método showToast não encontrado', 'error');
+                    }
+                } else {
+                    log('UI não encontrada', 'error');
+                }
+            } catch (error) {
+                log(`Erro ao testar UI: ${error.message}`, 'error');
+            }
+        }
+
+        // Atualizar status quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Página carregada, verificando módulos...');
+            setTimeout(updateModuleStatus, 1000);
+        });
+
+        // Atualizar status periodicamente
+        setInterval(updateModuleStatus, 5000);
+    </script>
+</body>
+</html>

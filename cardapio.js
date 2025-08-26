@@ -588,5 +588,20 @@ style.textContent = cardapioCSS;
 document.head.appendChild(style);
 
 // Instância global do gerenciador de cardápio
-window.CardapioManager = new CardapioManager();
+window.CardapioManager = null;
+
+// Inicializar quando DOM estiver pronto (apenas uma vez)
+if (!window.CardapioManager) {
+    if (document.readyState === 'loading') {
+        // DOM ainda carregando
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.CardapioManager) {
+                window.CardapioManager = new CardapioManager();
+            }
+        });
+    } else {
+        // DOM já carregado
+        window.CardapioManager = new CardapioManager();
+    }
+}
 

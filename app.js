@@ -57,29 +57,30 @@ class App {
         await this.waitForModules(['UI', 'API', 'AuthManager']);
         
         // Aguardar um pouco para garantir que os módulos específicos sejam carregados
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Inicializar módulos específicos das seções se ainda não existirem
-        if (typeof DashboardManager !== 'undefined') {
-            window.DashboardManager = new DashboardManager();
-            window.DashboardManager.init();
-        }
-        if (typeof PedidosManager !== 'undefined') {
-            window.PedidosManager = new PedidosManager();
-            window.PedidosManager.init();
-        }
-        if (typeof CardapioManager !== 'undefined') {
-            window.CardapioManager = new CardapioManager();
-            window.CardapioManager.init();
-        }
-        if (typeof RelatoriosManager !== 'undefined') {
-            window.RelatoriosManager = new RelatoriosManager();
-            window.RelatoriosManager.init();
-        }
-        if (typeof PerfisManager !== 'undefined') {
-            window.PerfisManager = new PerfisManager();
-            window.PerfisManager.init();
-        }
+        const modulesToInit = [
+            { name: 'DashboardManager', class: DashboardManager },
+            { name: 'PedidosManager', class: PedidosManager },
+            { name: 'CardapioManager', class: CardapioManager },
+            { name: 'RelatoriosManager', class: RelatoriosManager },
+            { name: 'PerfisManager', class: PerfisManager }
+        ];
+        
+        modulesToInit.forEach(({ name, class: ModuleClass }) => {
+            if (typeof ModuleClass !== 'undefined' && !window[name]) {
+                try {
+                    window[name] = new ModuleClass();
+                    if (window[name].init) {
+                        window[name].init();
+                    }
+                    debugLog(`Módulo ${name} inicializado`);
+                } catch (error) {
+                    console.error(`Erro ao inicializar ${name}:`, error);
+                }
+            }
+        });
         
         // Referenciar módulos
         this.modules = {

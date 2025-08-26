@@ -1002,5 +1002,20 @@ style.textContent = perfisCSS;
 document.head.appendChild(style);
 
 // Instância global do gerenciador de perfis
-window.PerfisManager = new PerfisManager();
+window.PerfisManager = null;
+
+// Inicializar quando DOM estiver pronto (apenas uma vez)
+if (!window.PerfisManager) {
+    if (document.readyState === 'loading') {
+        // DOM ainda carregando
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.PerfisManager) {
+                window.PerfisManager = new PerfisManager();
+            }
+        });
+    } else {
+        // DOM já carregado
+        window.PerfisManager = new PerfisManager();
+    }
+}
 

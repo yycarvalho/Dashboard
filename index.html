@@ -3,31 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sistema de Gestão de Pedidos - Plataforma completa para gerenciamento de pedidos, cardápio e entregas">
-    <meta name="keywords" content="gestão de pedidos, sistema de pedidos, cardápio, entregas">
+    <meta name="description" content="Sistema de Gestão de Pedidos - Plataforma completa para gerenciamento de pedidos, cardápio e entregas com dashboard em tempo real">
+    <meta name="keywords" content="gestão de pedidos, sistema de pedidos, cardápio, entregas, dashboard, restaurante, food delivery">
     <meta name="author" content="Sistema de Pedidos">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#3b82f6">
     
-    <title>Sistema de Gestão de Pedidos</title>
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://seusite.com/">
+    <meta property="og:title" content="Sistema de Gestão de Pedidos">
+    <meta property="og:description" content="Plataforma completa para gerenciamento de pedidos, cardápio e entregas">
+    <meta property="og:image" content="https://seusite.com/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://seusite.com/">
+    <meta property="twitter:title" content="Sistema de Gestão de Pedidos">
+    <meta property="twitter:description" content="Plataforma completa para gerenciamento de pedidos, cardápio e entregas">
+    <meta property="twitter:image" content="https://seusite.com/twitter-image.jpg">
+    
+    <title>Sistema de Gestão de Pedidos - Dashboard Completo</title>
     
     <!-- Preconnect para otimização de performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     
+    <!-- DNS Prefetch para recursos externos -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    
     <!-- Fontes e ícones -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <!-- Estilos -->
-    <link rel="stylesheet" href="../css/reset.css">
-    <link rel="stylesheet" href="../css/variables.css">
-    <link rel="stylesheet" href="../css/components.css">
-    <link rel="stylesheet" href="../css/layout.css">
-    <link rel="stylesheet" href="../css/responsive.css">
+    <link rel="stylesheet" href="reset.css">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="components.css">
+    <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="responsive.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 </head>
 <body>
     <!-- Tela de Login -->
-    <section id="loginScreen" class="login-screen" aria-label="Tela de autenticação">
+    <section id="loginScreen" class="login-screen" aria-label="Tela de autenticação do sistema">
         <div class="login-container">
             <header class="login-header">
                 <i class="fas fa-utensils" aria-hidden="true"></i>
@@ -46,6 +70,7 @@
                         required 
                         autocomplete="username"
                         aria-describedby="username-error"
+                        aria-required="true"
                     >
                     <span id="username-error" class="error-message" role="alert" aria-live="polite"></span>
                 </div>
@@ -60,6 +85,7 @@
                         required 
                         autocomplete="current-password"
                         aria-describedby="password-error"
+                        aria-required="true"
                     >
                     <span id="password-error" class="error-message" role="alert" aria-live="polite"></span>
                 </div>
@@ -101,28 +127,30 @@
                         placeholder="Buscar pedidos..." 
                         id="searchInput"
                         aria-label="Campo de busca de pedidos"
+                        aria-describedby="search-description"
                     >
+                    <span id="search-description" class="sr-only">Digite para buscar pedidos por cliente, número ou status</span>
                 </div>
                 
-                <div class="user-info" aria-label="Informações do usuário">
+                <div class="user-info" aria-label="Informações do usuário logado">
                     <span id="currentUser" class="user-name">Usuário</span>
                     <span id="currentProfile" class="user-profile">Perfil</span>
                 </div>
                 
-                <button class="logout-btn" id="logoutBtn" title="Sair do sistema" aria-label="Sair">
+                <button class="logout-btn" id="logoutBtn" title="Sair do sistema" aria-label="Sair do sistema">
                     <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                 </button>
             </div>
         </header>
 
         <!-- Sidebar (Desktop) -->
-        <aside class="sidebar" role="navigation" aria-label="Menu principal">
+        <aside class="sidebar" role="navigation" aria-label="Menu principal de navegação">
             <div class="sidebar-header">
                 <i class="fas fa-utensils" aria-hidden="true"></i>
                 <span>Sistema de Pedidos</span>
             </div>
             
-            <nav class="nav-menu">
+            <nav class="nav-menu" role="menubar">
                 <a href="#" class="nav-item active" data-section="dashboard" role="menuitem" aria-current="page">
                     <i class="fas fa-chart-pie" aria-hidden="true"></i>
                     <span>Dashboard</span>
@@ -149,29 +177,29 @@
         <!-- Conteúdo Principal -->
         <main class="main-content" role="main">
             <!-- Seções de conteúdo -->
-            <section id="dashboardSection" class="content-section active" aria-label="Dashboard">
+            <section id="dashboardSection" class="content-section active" aria-label="Dashboard com métricas e gráficos">
                 <!-- Conteúdo do dashboard será carregado via JavaScript -->
             </section>
             
-            <section id="pedidosSection" class="content-section" aria-label="Gerenciamento de pedidos">
+            <section id="pedidosSection" class="content-section" aria-label="Gerenciamento de pedidos e status">
                 <!-- Conteúdo de pedidos será carregado via JavaScript -->
             </section>
             
-            <section id="cardapioSection" class="content-section" aria-label="Gerenciamento do cardápio">
+            <section id="cardapioSection" class="content-section" aria-label="Gerenciamento do cardápio e produtos">
                 <!-- Conteúdo do cardápio será carregado via JavaScript -->
             </section>
             
-            <section id="relatoriosSection" class="content-section" aria-label="Relatórios e análises">
+            <section id="relatoriosSection" class="content-section" aria-label="Relatórios e análises de vendas">
                 <!-- Conteúdo de relatórios será carregado via JavaScript -->
             </section>
             
-            <section id="perfisSection" class="content-section" aria-label="Gerenciamento de perfis">
+            <section id="perfisSection" class="content-section" aria-label="Gerenciamento de perfis de usuário">
                 <!-- Conteúdo de perfis será carregado via JavaScript -->
             </section>
         </main>
 
         <!-- Bottom Nav (Mobile) -->
-        <nav class="bottom-nav" role="navigation" aria-label="Menu mobile">
+        <nav class="bottom-nav" role="navigation" aria-label="Menu de navegação mobile">
             <a href="#" class="nav-item active" data-section="dashboard" role="menuitem" aria-current="page">
                 <i class="fas fa-chart-pie" aria-hidden="true"></i>
                 <span>Dashboard</span>
@@ -196,28 +224,28 @@
     </div>
 
     <!-- Container para Modais -->
-    <div id="modalContainer" role="dialog" aria-hidden="true"></div>
+    <div id="modalContainer" role="dialog" aria-hidden="true" aria-modal="false"></div>
 
     <!-- Loading Global -->
-    <div id="loading" class="loading hidden" role="status" aria-label="Carregando">
+    <div id="loading" class="loading hidden" role="status" aria-label="Carregando sistema">
         <div class="spinner" aria-hidden="true"></div>
         <span class="sr-only">Carregando...</span>
     </div>
 
     <!-- Toast Notifications -->
-    <div id="toastContainer" class="toast-container" role="region" aria-label="Notificações" aria-live="polite"></div>
+    <div id="toastContainer" class="toast-container" role="region" aria-label="Notificações do sistema" aria-live="polite"></div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../js/config.js"></script>
-    <script src="../js/api.js"></script>
-    <script src="../js/auth.js"></script>
-    <script src="../js/ui.js"></script>
-    <script src="../js/dashboard.js"></script>
-    <script src="../js/pedidos.js"></script>
-    <script src="../js/cardapio.js"></script>
-    <script src="../js/relatorios.js"></script>
-    <script src="../js/perfis.js"></script>
-    <script src="../js/app.js"></script>
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="ui.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="pedidos.js"></script>
+    <script src="cardapio.js"></script>
+    <script src="relatorios.js"></script>
+    <script src="perfis.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

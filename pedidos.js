@@ -769,16 +769,18 @@ document.head.appendChild(style);
 // Instância global do gerenciador de pedidos
 window.PedidosManager = null;
 
-// Inicializar quando DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => {
-    window.PedidosManager = new PedidosManager();
-});
-
-// Se DOM já estiver carregado
-if (document.readyState === 'loading') {
-    // DOM ainda carregando
-} else {
-    // DOM já carregado
-    window.PedidosManager = new PedidosManager();
+// Inicializar quando DOM estiver pronto (apenas uma vez)
+if (!window.PedidosManager) {
+    if (document.readyState === 'loading') {
+        // DOM ainda carregando
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.PedidosManager) {
+                window.PedidosManager = new PedidosManager();
+            }
+        });
+    } else {
+        // DOM já carregado
+        window.PedidosManager = new PedidosManager();
+    }
 }
 

@@ -720,5 +720,20 @@ style.textContent = relatoriosCSS;
 document.head.appendChild(style);
 
 // Instância global do gerenciador de relatórios
-window.RelatoriosManager = new RelatoriosManager();
+window.RelatoriosManager = null;
+
+// Inicializar quando DOM estiver pronto (apenas uma vez)
+if (!window.RelatoriosManager) {
+    if (document.readyState === 'loading') {
+        // DOM ainda carregando
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.RelatoriosManager) {
+                window.RelatoriosManager = new RelatoriosManager();
+            }
+        });
+    } else {
+        // DOM já carregado
+        window.RelatoriosManager = new RelatoriosManager();
+    }
+}
 

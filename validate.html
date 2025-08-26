@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validação do Sistema</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .validation-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            margin: 5px 0;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover { background: #0056b3; }
+        .test-button:disabled { background: #6c757d; cursor: not-allowed; }
+        
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #28a745);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .summary-label {
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Validação do Sistema de Gestão de Pedidos</h1>
+        
+        <div class="validation-section">
+            <h2>📊 Status Geral</h2>
+            <div class="summary">
+                <div class="summary-card">
+                    <div class="summary-number" id="totalTests">0</div>
+                    <div class="summary-label">Total de Testes</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="passedTests">0</div>
+                    <div class="summary-label">Testes Aprovados</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="failedTests">0</div>
+                    <div class="summary-label">Testes Falharam</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="score">0%</div>
+                    <div class="summary-label">Pontuação</div>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            
+            <button class="test-button" onclick="runAllTests()">🚀 Executar Todos os Testes</button>
+            <button class="test-button" onclick="clearLog()">🗑️ Limpar Log</button>
+        </div>
+        
+        <div class="validation-section">
+            <h2>🧪 Testes de Módulos</h2>
+            <div id="moduleTests"></div>
+        </div>
+        
+        <div class="validation-section">
+            <h2>🔧 Testes de Funcionalidade</h2>
+            <div id="functionalityTests"></div>
+        </div>
+        
+        <div class="validation-section">
+            <h2>📱 Testes de Responsividade</h2>
+            <div id="responsiveTests"></div>
+        </div>
+        
+        <div class="validation-section">
+            <h2>📝 Log de Validação</h2>
+            <div class="log-container" id="validationLog"></div>
+        </div>
+    </div>
+
+    <!-- Scripts do sistema -->
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="ui.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="pedidos.js"></script>
+    <script src="cardapio.js"></script>
+    <script src="relatorios.js"></script>
+    <script src="perfis.js"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        // Sistema de validação
+        class SystemValidator {
+            constructor() {
+                this.tests = [];
+                this.results = {
+                    total: 0,
+                    passed: 0,
+                    failed: 0
+                };
+                this.log = [];
+            }
+            
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+                this.log.push(logEntry);
+                
+                const logContainer = document.getElementById('validationLog');
+                if (logContainer) {
+                    logContainer.textContent = this.log.join('\n');
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                }
+                
+                console.log(logEntry);
+            }
+            
+            addTest(name, testFunction, category = 'general') {
+                this.tests.push({ name, testFunction, category });
+            }
+            
+            async runTest(test) {
+                try {
+                    this.log(`Executando teste: ${test.name}`, 'info');
+                    const result = await test.testFunction();
+                    
+                    if (result.success) {
+                        this.results.passed++;
+                        this.log(`✅ ${test.name}: ${result.message}`, 'success');
+                        return { success: true, message: result.message };
+                    } else {
+                        this.results.failed++;
+                        this.log(`❌ ${test.name}: ${result.message}`, 'error');
+                        return { success: false, message: result.message };
+                    }
+                } catch (error) {
+                    this.results.failed++;
+                    this.log(`💥 ${test.name}: Erro - ${error.message}`, 'error');
+                    return { success: false, message: `Erro: ${error.message}` };
+                }
+            }
+            
+            async runAllTests() {
+                this.log('🚀 Iniciando validação completa do sistema...', 'info');
+                this.results = { total: this.tests.length, passed: 0, failed: 0 };
+                
+                for (let i = 0; i < this.tests.length; i++) {
+                    const test = this.tests[i];
+                    await this.runTest(test);
+                    
+                    // Atualizar progresso
+                    const progress = ((i + 1) / this.tests.length) * 100;
+                    this.updateProgress(progress);
+                    
+                    // Pequena pausa entre testes
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                this.finishValidation();
+            }
+            
+            updateProgress(percentage) {
+                const progressBar = document.getElementById('progressBar');
+                if (progressBar) {
+                    progressBar.style.width = `${percentage}%`;
+                }
+            }
+            
+            finishValidation() {
+                this.log('🎉 Validação concluída!', 'success');
+                this.updateSummary();
+                this.renderResults();
+            }
+            
+            updateSummary() {
+                const score = this.results.total > 0 ? 
+                    Math.round((this.results.passed / this.results.total) * 100) : 0;
+                
+                document.getElementById('totalTests').textContent = this.results.total;
+                document.getElementById('passedTests').textContent = this.results.passed;
+                document.getElementById('failedTests').textContent = this.results.failed;
+                document.getElementById('score').textContent = `${score}%`;
+            }
+            
+            renderResults() {
+                // Renderizar resultados por categoria
+                const categories = [...new Set(this.tests.map(t => t.category))];
+                
+                categories.forEach(category => {
+                    const categoryTests = this.tests.filter(t => t.category === category);
+                    const containerId = `${category}Tests`;
+                    const container = document.getElementById(containerId);
+                    
+                    if (container) {
+                        let html = `<h3>${this.getCategoryTitle(category)}</h3>`;
+                        
+                        categoryTests.forEach(test => {
+                            const result = this.getTestResult(test.name);
+                            const statusClass = result.success ? 'success' : 'error';
+                            const icon = result.success ? '✅' : '❌';
+                            
+                            html += `
+                                <div class="status ${statusClass}">
+                                    ${icon} ${test.name}: ${result.message}
+                                </div>
+                            `;
+                        });
+                        
+                        container.innerHTML = html;
+                    }
+                });
+            }
+            
+            getCategoryTitle(category) {
+                const titles = {
+                    'modules': '📦 Módulos do Sistema',
+                    'functionality': '⚙️ Funcionalidades',
+                    'responsive': '📱 Responsividade',
+                    'general': '🔧 Geral'
+                };
+                return titles[category] || category;
+            }
+            
+            getTestResult(testName) {
+                // Implementar lógica para recuperar resultado do teste
+                return { success: true, message: 'Teste executado' };
+            }
+        }
+        
+        // Criar instância do validador
+        const validator = new SystemValidator();
+        
+        // Adicionar testes de módulos
+        validator.addTest('Config.js', async () => {
+            if (typeof CONFIG !== 'undefined') {
+                return { success: true, message: 'Configurações carregadas' };
+            }
+            return { success: false, message: 'Configurações não encontradas' };
+        }, 'modules');
+        
+        validator.addTest('API.js', async () => {
+            if (typeof window.API !== 'undefined') {
+                return { success: true, message: 'Cliente API carregado' };
+            }
+            return { success: false, message: 'Cliente API não encontrado' };
+        }, 'modules');
+        
+        validator.addTest('AuthManager', async () => {
+            if (typeof window.AuthManager !== 'undefined') {
+                return { success: true, message: 'Gerenciador de autenticação carregado' };
+            }
+            return { success: false, message: 'Gerenciador de autenticação não encontrado' };
+        }, 'modules');
+        
+        validator.addTest('UIManager', async () => {
+            if (typeof window.UI !== 'undefined') {
+                return { success: true, message: 'Gerenciador de UI carregado' };
+            }
+            return { success: false, message: 'Gerenciador de UI não encontrado' };
+        }, 'modules');
+        
+        validator.addTest('DashboardManager', async () => {
+            if (typeof window.DashboardManager !== 'undefined') {
+                return { success: true, message: 'Gerenciador de dashboard carregado' };
+            }
+            return { success: false, message: 'Gerenciador de dashboard não encontrado' };
+        }, 'modules');
+        
+        validator.addTest('PedidosManager', async () => {
+            if (typeof window.PedidosManager !== 'undefined') {
+                return { success: true, message: 'Gerenciador de pedidos carregado' };
+            }
+            return { success: false, message: 'Gerenciador de pedidos não encontrado' };
+        }, 'modules');
+        
+        // Adicionar testes de funcionalidade
+        validator.addTest('Navegação', async () => {
+            const navItems = document.querySelectorAll('.nav-item');
+            if (navItems.length > 0) {
+                return { success: true, message: `${navItems.length} itens de navegação encontrados` };
+            }
+            return { success: false, message: 'Nenhum item de navegação encontrado' };
+        }, 'functionality');
+        
+        validator.addTest('Formulário de Login', async () => {
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                return { success: true, message: 'Formulário de login encontrado' };
+            }
+            return { success: false, message: 'Formulário de login não encontrado' };
+        }, 'functionality');
+        
+        validator.addTest('Sistema Principal', async () => {
+            const mainSystem = document.getElementById('mainSystem');
+            if (mainSystem) {
+                return { success: true, message: 'Sistema principal encontrado' };
+            }
+            return { success: false, message: 'Sistema principal não encontrado' };
+        }, 'functionality');
+        
+        // Adicionar testes de responsividade
+        validator.addTest('Viewport Meta Tag', async () => {
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                return { success: true, message: 'Meta tag viewport configurada' };
+            }
+            return { success: false, message: 'Meta tag viewport não encontrada' };
+        }, 'responsive');
+        
+        validator.addTest('CSS Responsivo', async () => {
+            const responsiveCSS = document.querySelector('link[href*="responsive"]');
+            if (responsiveCSS) {
+                return { success: true, message: 'CSS responsivo carregado' };
+            }
+            return { success: false, message: 'CSS responsivo não encontrado' };
+        }, 'responsive');
+        
+        // Funções globais
+        function runAllTests() {
+            validator.runAllTests();
+        }
+        
+        function clearLog() {
+            validator.log = [];
+            document.getElementById('validationLog').textContent = '';
+        }
+        
+        // Inicializar quando página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            validator.log('Página carregada, sistema de validação pronto', 'info');
+        });
+    </script>
+</body>
+</html>

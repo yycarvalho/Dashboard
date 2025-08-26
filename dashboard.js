@@ -371,16 +371,18 @@ document.head.appendChild(style);
 // Instância global do gerenciador de dashboard
 window.DashboardManager = null;
 
-// Inicializar quando DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => {
-    window.DashboardManager = new DashboardManager();
-});
-
-// Se DOM já estiver carregado
-if (document.readyState === 'loading') {
-    // DOM ainda carregando
-} else {
-    // DOM já carregado
-    window.DashboardManager = new DashboardManager();
+// Inicializar quando DOM estiver pronto (apenas uma vez)
+if (!window.DashboardManager) {
+    if (document.readyState === 'loading') {
+        // DOM ainda carregando
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.DashboardManager) {
+                window.DashboardManager = new DashboardManager();
+            }
+        });
+    } else {
+        // DOM já carregado
+        window.DashboardManager = new DashboardManager();
+    }
 }
 
