@@ -95,7 +95,8 @@ class PedidosManager {
             this.orders = await window.API.getOrders();
             this.filteredOrders = [...this.orders];
             
-            // Renderizar lista de pedidos
+            // Renderizar filtros e lista de pedidos
+            this.renderFilters();
             this.renderOrdersList();
             
         } catch (error) {
@@ -109,7 +110,7 @@ class PedidosManager {
         const ordersList = document.getElementById('ordersList');
         if (!ordersList) return;
 
-        if (this.orders.length === 0) {
+        if (this.filteredOrders.length === 0) {
             ordersList.innerHTML = `
                 <div class="empty-state" role="status">
                     <i class="fas fa-clipboard-list" aria-hidden="true"></i>
@@ -124,7 +125,7 @@ class PedidosManager {
             return;
         }
 
-        ordersList.innerHTML = this.orders.map((order, index) => `
+        ordersList.innerHTML = this.filteredOrders.map((order, index) => `
             <article class="order-card" role="article" aria-labelledby="order-title-${order.id}" tabindex="0">
                 <header class="order-header">
                     <h4 id="order-title-${order.id}" class="order-id">#${order.id}</h4>
@@ -345,6 +346,161 @@ class PedidosManager {
     setFilter(filter) {
         this.currentFilter = filter;
         this.applyFilters();
+    }
+
+    // Atualizar status de um pedido
+    async updateStatus(orderId, newStatus) {
+        try {
+            const response = await window.API.request('PUT', 
+                CONFIG.ENDPOINTS.ORDERS.UPDATE_STATUS.replace('{id}', orderId), 
+                { status: newStatus }
+            );
+            
+            if (response.data) {
+                // Atualizar pedido na lista local
+                const orderIndex = this.orders.findIndex(order => order.id === orderId);
+                if (orderIndex !== -1) {
+                    this.orders[orderIndex].status = newStatus;
+                }
+                
+                // Re-renderizar
+                this.applyFilters();
+                
+                // Mostrar toast de sucesso
+                if (window.UI) {
+                    window.UI.showToast(`Pedido #${orderId} atualizado para ${newStatus}`, 'success');
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar status do pedido:', error);
+            if (window.UI) {
+                window.UI.showToast('Erro ao atualizar status do pedido', 'error');
+            }
+        }
+    }
+
+    // Ver detalhes do pedido
+    viewOrder(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order && window.UI) {
+            window.UI.createModal({
+                title: `Pedido #${orderId}`,
+                content: this.generateOrderDetailsHTML(order),
+                size: 'lg'
+            });
+        }
+    }
+
+    // Editar pedido
+    editOrder(orderId) {
+        // Implementar modal de edição
+        console.log('Editar pedido:', orderId);
+        if (window.UI) {
+            window.UI.showToast('Funcionalidade de edição em desenvolvimento', 'info');
+        }
+    }
+
+    // Mostrar modal de criação
+    showCreateModal() {
+        if (window.UI) {
+            window.UI.createModal({
+                title: 'Novo Pedido',
+                content: this.generateCreateOrderHTML(),
+                size: 'lg'
+            });
+        }
+    }
+
+    // Gerar HTML dos detalhes do pedido
+    generateOrderDetailsHTML(order) {
+        return `
+            <div class="order-details-modal">
+                <div class="order-info">
+                    <h4>Informações do Cliente</h4>
+                    <p><strong>Nome:</strong> ${order.customer}</p>
+                    <p><strong>Telefone:</strong> ${order.phone}</p>
+                    <p><strong>Tipo:</strong> ${order.type}</p>
+                </div>
+                
+                <div class="order-items">
+                    <h4>Itens do Pedido</h4>
+                    <ul>
+                        ${order.items.map(item => `
+                            <li>${item.quantity}x ${item.productName} - ${formatCurrency(item.price)}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+                
+                <div class="order-summary">
+                    <p><strong>Total: ${formatCurrency(order.total)}</strong></p>
+                    <p><strong>Status:</strong> ${order.status}</p>
+                    <p><strong>Criado em:</strong> ${formatDate(order.createdAt)}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Gerar HTML do formulário de criação
+    generateCreateOrderHTML() {
+        return `
+            <div class="create-order-form">
+                <form id="createOrderForm">
+                    <div class="form-group">
+                        <label for="customerName">Nome do Cliente</label>
+                        <input type="text" id="customerName" name="customer" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customerPhone">Telefone</label>
+                        <input type="tel" id="customerPhone" name="phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="orderType">Tipo do Pedido</label>
+                        <select id="orderType" name="type" required>
+                            ${CONFIG.ORDER_TYPES.map(type => `
+                                <option value="${type.id}">${type.name}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="window.UI.closeModal()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Criar Pedido
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+    }
+
+    // Atualizar dados
+    async refresh() {
+        await this.loadData();
+        if (window.UI) {
+            window.UI.showToast('Pedidos atualizados', 'success');
+        }
+    }
+
+    // Renderizar erro
+    renderError() {
+        const ordersList = document.getElementById('ordersList');
+        if (ordersList) {
+            ordersList.innerHTML = `
+                <div class="error-state" role="alert">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    <h3>Erro ao carregar pedidos</h3>
+                    <p>Ocorreu um erro ao buscar os dados. Tente novamente.</p>
+                    <button class="btn btn-primary" onclick="window.PedidosManager.refresh()">
+                        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
+        }
     }
 
     // Renderizar kanban board

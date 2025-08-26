@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Frontend - Sistema de Pedidos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #results {
+            white-space: pre-wrap;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Frontend - Sistema de Pedidos</h1>
+    
+    <div class="test-section">
+        <h2>📊 Status dos Módulos</h2>
+        <div id="modules-status">Carregando...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔌 Teste de Conexão com API</h2>
+        <button onclick="testApiConnection()">Testar Conexão</button>
+        <button onclick="testLogin()">Testar Login</button>
+        <div id="api-status">Aguardando teste...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Teste das Funcionalidades</h2>
+        <button onclick="testDashboard()">Dashboard</button>
+        <button onclick="testPedidos()">Pedidos</button>
+        <button onclick="testCardapio()">Cardápio</button>
+        <button onclick="testRelatorios()">Relatórios</button>
+        <button onclick="testPerfis()">Perfis</button>
+        <button onclick="testAllFeatures()">Testar Todas</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📝 Resultados dos Testes</h2>
+        <div id="results"></div>
+    </div>
+
+    <!-- Scripts do sistema -->
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="ui.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="pedidos.js"></script>
+    <script src="cardapio.js"></script>
+    <script src="relatorios.js"></script>
+    <script src="perfis.js"></script>
+    <script src="app.js"></script>
+
+    <script>
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            testResults.push(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+            document.getElementById('results').textContent = testResults.join('\n');
+        }
+
+        function updateModulesStatus() {
+            const modules = [
+                { name: 'CONFIG', obj: window.CONFIG },
+                { name: 'ApiClient', obj: window.ApiClient },
+                { name: 'AuthManager', obj: window.AuthManager },
+                { name: 'UI', obj: window.UI },
+                { name: 'DashboardManager', obj: window.DashboardManager },
+                { name: 'PedidosManager', obj: window.PedidosManager },
+                { name: 'CardapioManager', obj: window.CardapioManager },
+                { name: 'RelatoriosManager', obj: window.RelatoriosManager },
+                { name: 'PerfisManager', obj: window.PerfisManager }
+            ];
+
+            const statusHtml = modules.map(module => {
+                const status = module.obj ? 'success' : 'error';
+                const statusText = module.obj ? '✅ Carregado' : '❌ Não carregado';
+                return `<div class="status ${status}">${module.name}: ${statusText}</div>`;
+            }).join('');
+
+            document.getElementById('modules-status').innerHTML = statusHtml;
+        }
+
+        async function testApiConnection() {
+            log('Testando conexão com API...');
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/health`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    log('✅ Conexão com API estabelecida com sucesso', 'success');
+                    document.getElementById('api-status').innerHTML = '<div class="status success">✅ API Online</div>';
+                } else {
+                    log(`❌ API respondeu com status ${response.status}`, 'error');
+                    document.getElementById('api-status').innerHTML = '<div class="status error">❌ API com erro</div>';
+                }
+            } catch (error) {
+                log(`❌ Erro ao conectar com API: ${error.message}`, 'error');
+                document.getElementById('api-status').innerHTML = '<div class="status error">❌ API Offline</div>';
+            }
+        }
+
+        async function testLogin() {
+            log('Testando login...');
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: '123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    log('✅ Login realizado com sucesso', 'success');
+                    window.API = new ApiClient();
+                    window.API.setAuthToken(data.token);
+                } else {
+                    log('❌ Falha no login: ' + (data.message || 'Erro desconhecido'), 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro no login: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDashboard() {
+            log('Testando Dashboard...');
+            try {
+                if (!window.DashboardManager) {
+                    log('❌ DashboardManager não encontrado', 'error');
+                    return;
+                }
+
+                // Testar métricas
+                const response = await fetch(`${CONFIG.API_BASE_URL}/metrics/dashboard`, {
+                    headers: window.API ? { 'Authorization': `Bearer ${window.API.token}` } : {}
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Dashboard: Métricas carregadas com sucesso', 'success');
+                    log(`📊 Dados: ${JSON.stringify(data, null, 2)}`, 'info');
+                } else {
+                    log(`❌ Dashboard: Erro ao carregar métricas (${response.status})`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Dashboard: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPedidos() {
+            log('Testando Pedidos...');
+            try {
+                if (!window.PedidosManager) {
+                    log('❌ PedidosManager não encontrado', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${CONFIG.API_BASE_URL}/orders`, {
+                    headers: window.API ? { 'Authorization': `Bearer ${window.API.token}` } : {}
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Pedidos: Lista carregada com sucesso', 'success');
+                    log(`📋 ${data.length} pedidos encontrados`, 'info');
+                } else {
+                    log(`❌ Pedidos: Erro ao carregar lista (${response.status})`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Pedidos: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCardapio() {
+            log('Testando Cardápio...');
+            try {
+                if (!window.CardapioManager) {
+                    log('❌ CardapioManager não encontrado', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${CONFIG.API_BASE_URL}/products`, {
+                    headers: window.API ? { 'Authorization': `Bearer ${window.API.token}` } : {}
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Cardápio: Produtos carregados com sucesso', 'success');
+                    log(`🍽️ ${data.length} produtos encontrados`, 'info');
+                } else {
+                    log(`❌ Cardápio: Erro ao carregar produtos (${response.status})`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Cardápio: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRelatorios() {
+            log('Testando Relatórios...');
+            try {
+                if (!window.RelatoriosManager) {
+                    log('❌ RelatoriosManager não encontrado', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${CONFIG.API_BASE_URL}/metrics/reports`, {
+                    headers: window.API ? { 'Authorization': `Bearer ${window.API.token}` } : {}
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Relatórios: Dados carregados com sucesso', 'success');
+                    log(`📈 Relatórios disponíveis`, 'info');
+                } else {
+                    log(`❌ Relatórios: Erro ao carregar dados (${response.status})`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Relatórios: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPerfis() {
+            log('Testando Perfis...');
+            try {
+                if (!window.PerfisManager) {
+                    log('❌ PerfisManager não encontrado', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${CONFIG.API_BASE_URL}/profiles`, {
+                    headers: window.API ? { 'Authorization': `Bearer ${window.API.token}` } : {}
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Perfis: Lista carregada com sucesso', 'success');
+                    log(`👥 ${data.length} perfis encontrados`, 'info');
+                } else {
+                    log(`❌ Perfis: Erro ao carregar lista (${response.status})`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Perfis: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllFeatures() {
+            log('=== INICIANDO TESTE COMPLETO ===', 'info');
+            await testApiConnection();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testLogin();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testDashboard();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testPedidos();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testCardapio();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testRelatorios();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testPerfis();
+            log('=== TESTE COMPLETO FINALIZADO ===', 'info');
+        }
+
+        // Inicializar quando a página carregar
+        window.addEventListener('load', () => {
+            log('Página de teste carregada', 'info');
+            updateModulesStatus();
+            
+            // Atualizar status dos módulos a cada 2 segundos
+            setInterval(updateModulesStatus, 2000);
+        });
+    </script>
+</body>
+</html>

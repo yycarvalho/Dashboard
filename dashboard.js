@@ -375,6 +375,31 @@ class DashboardManager {
         });
         this.charts = {};
     }
+    // Atualizar dados do dashboard
+    async refresh() {
+        await this.loadData();
+        if (window.UI) {
+            window.UI.showToast('Dashboard atualizado', 'success');
+        }
+    }
+
+    // Renderizar estado de erro
+    renderError() {
+        const metricsGrid = document.getElementById('metricsGrid');
+        if (metricsGrid) {
+            metricsGrid.innerHTML = `
+                <div class="error-state" role="alert">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    <h3>Erro ao carregar dados</h3>
+                    <p>Ocorreu um erro ao buscar as métricas. Tente novamente.</p>
+                    <button class="btn btn-primary" onclick="window.DashboardManager.refresh()">
+                        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
+        }
+    }
 }
 
 // CSS adicional para o dashboard
