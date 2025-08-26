@@ -41,7 +41,7 @@ class PedidosManager {
                 <!-- Filtros serão carregados aqui -->
             </div>
 
-            <div class="orders-list" id="ordersList">
+            <div class="kanban-board" id="kanbanBoard">
                 <div class="loading-state">
                     <i class="fas fa-spinner fa-spin"></i>
                     Carregando pedidos...
@@ -62,8 +62,9 @@ class PedidosManager {
             this.orders = await window.API.getOrders();
             this.filteredOrders = [...this.orders];
             
-            // Renderizar lista de pedidos
-            this.renderOrdersList();
+            // Renderizar filtros e kanban
+            this.renderFilters();
+            this.renderKanban();
             
         } catch (error) {
             console.error('Erro ao carregar pedidos:', error);
@@ -73,43 +74,8 @@ class PedidosManager {
 
     // Renderizar lista de pedidos
     renderOrdersList() {
-        const ordersList = document.getElementById('ordersList');
-        if (!ordersList) return;
-
-        if (this.orders.length === 0) {
-            ordersList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-clipboard-list"></i>
-                    <h3>Nenhum pedido encontrado</h3>
-                    <p>Não há pedidos para exibir no momento.</p>
-                </div>
-            `;
-            return;
-        }
-
-        ordersList.innerHTML = this.orders.map(order => `
-            <div class="order-card">
-                <div class="order-header">
-                    <div class="order-id">#${order.id}</div>
-                    <div class="order-status status-${order.status}">${order.status}</div>
-                </div>
-                <div class="order-details">
-                    <div><strong>Cliente:</strong> ${order.customer}</div>
-                    <div><strong>Telefone:</strong> ${order.phone}</div>
-                    <div><strong>Tipo:</strong> ${order.type}</div>
-                    <div><strong>Total:</strong> R$ ${order.total.toFixed(2)}</div>
-                    <div><strong>Criado:</strong> ${formatDate(order.createdAt)}</div>
-                </div>
-                <div class="order-items">
-                    <strong>Itens:</strong>
-                    ${order.items.map(item => `
-                        <div class="order-item">
-                            ${item.quantity}x ${item.productName} - R$ ${item.price.toFixed(2)}
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `).join('');
+        // Obsoleto: lista simples substituída por Kanban
+        this.renderKanban();
     }
 
     // Renderizar filtros
@@ -154,6 +120,16 @@ class PedidosManager {
 
         // Agrupar pedidos por status
         const ordersByStatus = this.groupOrdersByStatus();
+
+        if (this.filteredOrders.length === 0) {
+            kanbanBoard.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Nenhum pedido encontrado</h3>
+                    <p>Tente alterar os filtros ou a busca.</p>
+                </div>`;
+            return;
+        }
 
         kanbanBoard.innerHTML = CONFIG.ORDER_STATUSES.map(status => {
             const orders = ordersByStatus[status.id] || [];
@@ -308,7 +284,7 @@ class PedidosManager {
                 return (
                     order.id.toLowerCase().includes(query) ||
                     order.customer.toLowerCase().includes(query) ||
-                    (order.phone && order.phone.includes(query))
+                    (order.phone && order.phone.toLowerCase().includes(query))
                 );
             }
             

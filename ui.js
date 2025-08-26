@@ -2,517 +2,226 @@
  * Gerenciador de Interface do Usuário
  * Responsável por componentes visuais, modais, toasts, loading, etc.
  */
-class UIManager {
-    constructor() {
-        this.activeModals = [];
-        this.toastContainer = null;
-        this.loadingElement = null;
-        this.init();
-    }
-
-    init() {
-        this.toastContainer = document.getElementById('toastContainer');
-        this.loadingElement = document.getElementById('loading');
-        this.setupGlobalEventListeners();
-    }
-
-    // Configurar event listeners globais
-    setupGlobalEventListeners() {
-        // Fechar modais com ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.activeModals.length > 0) {
-                this.closeModal();
-            }
-        });
-
-        // Fechar modais clicando no backdrop
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-backdrop')) {
-                this.closeModal();
-            }
-        });
-    }
-
-    // Mostrar loading global
-    showLoading() {
-        if (this.loadingElement) {
-            this.loadingElement.classList.remove('hidden');
-        }
-    }
-
-    // Esconder loading global
-    hideLoading() {
-        if (this.loadingElement) {
-            this.loadingElement.classList.add('hidden');
-        }
-    }
-
-    // Mostrar toast notification
-    showToast(message, type = 'info', duration = CONFIG.TIMEOUTS.TOAST) {
-        if (!this.toastContainer) return;
-
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.textContent = message;
-        toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'polite');
-
-        // Adicionar ao container
-        this.toastContainer.appendChild(toast);
-
-        // Remover automaticamente após o tempo especificado
-        setTimeout(() => {
-            this.removeToast(toast);
-        }, duration);
-
-        // Permitir remoção manual clicando
-        toast.addEventListener('click', () => {
-            this.removeToast(toast);
-        });
-
-        return toast;
-    }
-
-    // Remover toast
-    removeToast(toast) {
-        if (toast && toast.parentNode) {
-            toast.style.animation = 'slideOutRight 0.3s ease-in forwards';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                }
-            }, 300);
-        }
-    }
-
-    // Criar modal
-    createModal(options = {}) {
-        const {
-            title = 'Modal',
-            content = '',
-            size = 'md',
-            closable = true,
-            footer = null,
-            onClose = null
-        } = options;
-
-        // Criar estrutura do modal
-        const modalBackdrop = document.createElement('div');
-        modalBackdrop.className = 'modal-backdrop';
-        modalBackdrop.setAttribute('role', 'dialog');
-        modalBackdrop.setAttribute('aria-modal', 'true');
-        modalBackdrop.setAttribute('aria-labelledby', 'modal-title');
-
-        const modalContent = document.createElement('div');
-        modalContent.className = `modal-content modal-${size}`;
-
-        // Header
-        const modalHeader = document.createElement('div');
-        modalHeader.className = 'modal-header';
-
-        const modalTitle = document.createElement('h3');
-        modalTitle.id = 'modal-title';
-        modalTitle.textContent = title;
-
-        modalHeader.appendChild(modalTitle);
-
-        if (closable) {
-            const closeBtn = document.createElement('button');
-            closeBtn.className = 'modal-close';
-            closeBtn.innerHTML = '<i class="fas fa-times"></i>';
-            closeBtn.setAttribute('aria-label', 'Fechar modal');
-            closeBtn.onclick = () => this.closeModal(modalBackdrop, onClose);
-            modalHeader.appendChild(closeBtn);
-        }
-
-        // Body
-        const modalBody = document.createElement('div');
-        modalBody.className = 'modal-body';
-        
-        if (typeof content === 'string') {
-            modalBody.innerHTML = content;
-        } else if (content instanceof HTMLElement) {
-            modalBody.appendChild(content);
-        }
-
-        // Footer
-        let modalFooter = null;
-        if (footer) {
-            modalFooter = document.createElement('div');
-            modalFooter.className = 'modal-footer';
-            
-            if (typeof footer === 'string') {
-                modalFooter.innerHTML = footer;
-            } else if (footer instanceof HTMLElement) {
-                modalFooter.appendChild(footer);
-            }
-        }
-
-        // Montar modal
-        modalContent.appendChild(modalHeader);
-        modalContent.appendChild(modalBody);
-        if (modalFooter) {
-            modalContent.appendChild(modalFooter);
-        }
-
-        modalBackdrop.appendChild(modalContent);
-
-        return {
-            backdrop: modalBackdrop,
-            content: modalContent,
-            header: modalHeader,
-            body: modalBody,
-            footer: modalFooter,
-            title: modalTitle
-        };
-    }
-
-    // Mostrar modal
-    showModal(options = {}) {
-        const modal = this.createModal(options);
-        
-        // Adicionar ao DOM
-        document.body.appendChild(modal.backdrop);
-        
-        // Adicionar à lista de modais ativos
-        this.activeModals.push(modal);
-
-        // Focar no modal para acessibilidade
-        modal.backdrop.focus();
-
-        return modal;
-    }
-
-    // Fechar modal
-    closeModal(modalElement = null, onClose = null) {
-        let modalToClose = modalElement;
-        
-        if (!modalToClose && this.activeModals.length > 0) {
-            modalToClose = this.activeModals[this.activeModals.length - 1].backdrop;
-        }
-
-        if (modalToClose) {
-            // Remover da lista de modais ativos
-            this.activeModals = this.activeModals.filter(modal => modal.backdrop !== modalToClose);
-            
-            // Remover do DOM
-            if (modalToClose.parentNode) {
-                modalToClose.parentNode.removeChild(modalToClose);
-            }
-
-            // Executar callback de fechamento
-            if (onClose && typeof onClose === 'function') {
-                onClose();
-            }
-        }
-    }
-
-    // Criar formulário dinâmico
-    createForm(fields = [], options = {}) {
-        const {
-            submitText = 'Salvar',
-            cancelText = 'Cancelar',
-            onSubmit = null,
-            onCancel = null
-        } = options;
-
-        const form = document.createElement('form');
-        form.className = 'dynamic-form';
-        form.noValidate = true;
-
-        // Criar campos
-        fields.forEach(field => {
-            const formGroup = this.createFormField(field);
-            form.appendChild(formGroup);
-        });
-
-        // Criar footer com botões
-        const footer = document.createElement('div');
-        footer.className = 'modal-footer';
-
-        if (onCancel) {
-            const cancelBtn = document.createElement('button');
-            cancelBtn.type = 'button';
-            cancelBtn.className = 'btn btn-secondary';
-            cancelBtn.textContent = cancelText;
-            cancelBtn.onclick = onCancel;
-            footer.appendChild(cancelBtn);
-        }
-
-        const submitBtn = document.createElement('button');
-        submitBtn.type = 'submit';
-        submitBtn.className = 'btn btn-primary';
-        submitBtn.innerHTML = `
-            <span class="btn-text">${submitText}</span>
-            <span class="btn-loading hidden">
-                <i class="fas fa-spinner fa-spin"></i>
-                Salvando...
-            </span>
-        `;
-        footer.appendChild(submitBtn);
-
-        // Event listener para submit
-        if (onSubmit) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-                
-                try {
-                    this.setFormLoading(form, true);
-                    await onSubmit(data, form);
-                } catch (error) {
-                    console.error('Erro no submit do formulário:', error);
-                } finally {
-                    this.setFormLoading(form, false);
-                }
-            });
-        }
-
-        return { form, footer };
-    }
-
-    // Criar campo de formulário
-    createFormField(field) {
-        const {
-            type = 'text',
-            name,
-            label,
-            placeholder = '',
-            required = false,
-            options = [],
-            value = ''
-        } = field;
-
-        const formGroup = document.createElement('div');
-        formGroup.className = 'form-group';
-
-        // Label
-        const labelElement = document.createElement('label');
-        labelElement.setAttribute('for', name);
-        labelElement.textContent = label;
-        if (required) {
-            labelElement.innerHTML += ' <span class="text-danger">*</span>';
-        }
-        formGroup.appendChild(labelElement);
-
-        // Input
-        let inputElement;
-
-        if (type === 'select') {
-            inputElement = document.createElement('select');
-            options.forEach(option => {
-                const optionElement = document.createElement('option');
-                optionElement.value = option.value;
-                optionElement.textContent = option.label;
-                if (option.value === value) {
-                    optionElement.selected = true;
-                }
-                inputElement.appendChild(optionElement);
-            });
-        } else if (type === 'textarea') {
-            inputElement = document.createElement('textarea');
-            inputElement.value = value;
-        } else {
-            inputElement = document.createElement('input');
-            inputElement.type = type;
-            inputElement.value = value;
-        }
-
-        inputElement.id = name;
-        inputElement.name = name;
-        inputElement.placeholder = placeholder;
-        inputElement.required = required;
-
-        formGroup.appendChild(inputElement);
-
-        // Mensagem de erro
-        const errorElement = document.createElement('span');
-        errorElement.className = 'error-message';
-        errorElement.id = `${name}-error`;
-        errorElement.setAttribute('role', 'alert');
-        errorElement.setAttribute('aria-live', 'polite');
-        formGroup.appendChild(errorElement);
-
-        return formGroup;
-    }
-
-    // Configurar estado de loading do formulário
-    setFormLoading(form, isLoading) {
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            if (isLoading) {
-                submitBtn.classList.add('loading');
-                submitBtn.disabled = true;
-            } else {
-                submitBtn.classList.remove('loading');
-                submitBtn.disabled = false;
-            }
-        }
-    }
-
-    // Mostrar erro em campo específico
-    showFieldError(fieldName, message) {
-        const errorElement = document.getElementById(`${fieldName}-error`);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-        }
-    }
-
-    // Limpar erros do formulário
-    clearFormErrors(form) {
-        const errorElements = form.querySelectorAll('.error-message');
-        errorElements.forEach(element => {
-            element.textContent = '';
-            element.style.display = 'none';
-        });
-    }
-
-    // Criar confirmação
-    showConfirmation(message, options = {}) {
-        const {
-            title = 'Confirmação',
-            confirmText = 'Confirmar',
-            cancelText = 'Cancelar',
-            type = 'warning'
-        } = options;
-
-        return new Promise((resolve) => {
-            const content = document.createElement('div');
-            content.innerHTML = `
-                <div class="confirmation-content">
-                    <div class="confirmation-icon ${type}">
-                        <i class="fas ${type === 'danger' ? 'fa-exclamation-triangle' : 'fa-question-circle'}"></i>
-                    </div>
-                    <p class="confirmation-message">${message}</p>
-                </div>
-            `;
-
-            const footer = document.createElement('div');
-            footer.innerHTML = `
-                <button type="button" class="btn btn-secondary" id="cancel-btn">${cancelText}</button>
-                <button type="button" class="btn btn-${type}" id="confirm-btn">${confirmText}</button>
-            `;
-
-            const modal = this.showModal({
-                title,
-                content,
-                footer,
-                size: 'sm',
-                closable: false
-            });
-
-            // Event listeners
-            footer.querySelector('#cancel-btn').onclick = () => {
-                this.closeModal(modal.backdrop);
-                resolve(false);
-            };
-
-            footer.querySelector('#confirm-btn').onclick = () => {
-                this.closeModal(modal.backdrop);
-                resolve(true);
-            };
-        });
-    }
-
-    // Utilitários para elementos
-    show(element) {
-        if (element) {
-            element.classList.remove('hidden');
-        }
-    }
-
-    hide(element) {
-        if (element) {
-            element.classList.add('hidden');
-        }
-    }
-
-    toggle(element) {
-        if (element) {
-            element.classList.toggle('hidden');
-        }
-    }
-
-    // Adicionar classe CSS
-    addClass(element, className) {
-        if (element) {
-            element.classList.add(className);
-        }
-    }
-
-    // Remover classe CSS
-    removeClass(element, className) {
-        if (element) {
-            element.classList.remove(className);
-        }
-    }
-
-    // Alternar classe CSS
-    toggleClass(element, className) {
-        if (element) {
-            element.classList.toggle(className);
-        }
-    }
-}
-
-// CSS adicional para componentes dinâmicos
-const additionalCSS = `
-.confirmation-content {
-    text-align: center;
-    padding: 1rem 0;
-}
-
-.confirmation-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
-
-.confirmation-icon.warning {
-    color: var(--warning);
-}
-
-.confirmation-icon.danger {
-    color: var(--danger);
-}
-
-.confirmation-message {
-    font-size: 1.1rem;
-    color: var(--text-color);
-    margin: 0;
-}
-
-.modal-sm .modal-content {
-    max-width: 400px;
-}
-
-.modal-lg .modal-content {
-    max-width: 800px;
-}
-
-.modal-xl .modal-content {
-    max-width: 1200px;
-}
-
-@keyframes slideOutRight {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-`;
-
-// Adicionar CSS ao documento
-const style = document.createElement('style');
-style.textContent = additionalCSS;
-document.head.appendChild(style);
-
-// Instância global do gerenciador de UI
-window.UI = new UIManager();
+(function() {
+	class UIManager {
+		constructor() {
+			this.toastContainer = document.getElementById('toastContainer');
+			this.modalContainer = document.getElementById('modalContainer');
+			this.loadingOverlay = document.getElementById('loading');
+			this.activeModal = null;
+		}
+
+		// Toasts
+		showToast(message, type = 'success', timeout = CONFIG.TIMEOUTS.TOAST) {
+			if (!this.toastContainer) return;
+			const toast = document.createElement('div');
+			toast.className = `toast ${type}`;
+			toast.setAttribute('role', 'status');
+			toast.setAttribute('aria-live', 'polite');
+			toast.textContent = message;
+			this.toastContainer.appendChild(toast);
+			setTimeout(() => {
+				toast.style.opacity = '0';
+				setTimeout(() => toast.remove(), 300);
+			}, timeout);
+		}
+
+		// Loading
+		showLoading() {
+			if (this.loadingOverlay) {
+				this.loadingOverlay.classList.remove('hidden');
+			}
+		}
+
+		hideLoading() {
+			if (this.loadingOverlay) {
+				this.loadingOverlay.classList.add('hidden');
+			}
+		}
+
+		// Modal
+		showModal({ title = '', content = '', footer = null, size = 'md' } = {}) {
+			if (!this.modalContainer) return;
+
+			// Cleanup previous
+			this.closeModal();
+
+			const backdrop = document.createElement('div');
+			backdrop.className = 'modal-backdrop';
+			backdrop.addEventListener('click', (e) => {
+				if (e.target === backdrop) this.closeModal();
+			});
+
+			const modal = document.createElement('div');
+			modal.className = 'modal-content';
+			modal.setAttribute('role', 'dialog');
+			modal.setAttribute('aria-modal', 'true');
+			modal.setAttribute('aria-labelledby', 'modalTitle');
+
+			const header = document.createElement('div');
+			header.className = 'modal-header';
+			const h3 = document.createElement('h3');
+			h3.id = 'modalTitle';
+			h3.textContent = title;
+			const closeBtn = document.createElement('button');
+			closeBtn.className = 'modal-close';
+			closeBtn.setAttribute('aria-label', 'Fechar');
+			closeBtn.innerHTML = '&times;';
+			closeBtn.addEventListener('click', () => this.closeModal());
+			header.appendChild(h3);
+			header.appendChild(closeBtn);
+
+			const body = document.createElement('div');
+			body.className = 'modal-body';
+			if (typeof content === 'string') {
+				body.innerHTML = content;
+			} else if (content instanceof Node) {
+				body.appendChild(content);
+			}
+
+			modal.appendChild(header);
+			modal.appendChild(body);
+
+			if (footer) {
+				const footerEl = document.createElement('div');
+				footerEl.className = 'modal-footer';
+				if (typeof footer === 'string') {
+					footerEl.innerHTML = footer;
+				} else if (footer instanceof Node) {
+					footerEl.appendChild(footer);
+				}
+				modal.appendChild(footerEl);
+			}
+
+			backdrop.appendChild(modal);
+			this.modalContainer.appendChild(backdrop);
+			this.activeModal = backdrop;
+
+			// Focus trap: focus close button initially
+			closeBtn.focus();
+
+			// Keyboard handlers
+			document.addEventListener('keydown', this._escHandler);
+		}
+
+		_escHandler = (e) => {
+			if (e.key === 'Escape') {
+				this.closeModal();
+			}
+		};
+
+		closeModal() {
+			if (this.activeModal) {
+				this.activeModal.remove();
+				this.activeModal = null;
+				document.removeEventListener('keydown', this._escHandler);
+			}
+		}
+
+		// Simple form builder for modals
+		createForm(fields = [], { submitText = 'Salvar', onSubmit = null, onCancel = null } = {}) {
+			const form = document.createElement('form');
+			form.setAttribute('novalidate', 'true');
+
+			fields.forEach(field => {
+				const group = document.createElement('div');
+				group.className = 'form-group';
+
+				const label = document.createElement('label');
+				label.textContent = field.label || '';
+				if (field.name) label.setAttribute('for', field.name);
+				group.appendChild(label);
+
+				let input;
+				switch (field.type) {
+					case 'textarea':
+						input = document.createElement('textarea');
+						break;
+					case 'select':
+						input = document.createElement('select');
+						(field.options || []).forEach(opt => {
+							const option = document.createElement('option');
+							option.value = String(opt.value);
+							option.textContent = opt.label;
+							input.appendChild(option);
+						});
+						break;
+					default:
+						input = document.createElement('input');
+						input.type = field.type || 'text';
+				}
+
+				input.id = field.name;
+				input.name = field.name;
+				if (field.placeholder) input.placeholder = field.placeholder;
+				if (field.required) input.required = true;
+				if (field.value !== undefined && field.value !== null) input.value = String(field.value);
+
+				group.appendChild(input);
+				form.appendChild(group);
+			});
+
+			const footer = document.createElement('div');
+			const cancelBtn = document.createElement('button');
+			cancelBtn.type = 'button';
+			cancelBtn.className = 'btn btn-secondary';
+			cancelBtn.textContent = 'Cancelar';
+			cancelBtn.addEventListener('click', () => {
+				if (onCancel) onCancel();
+			});
+			const submitBtn = document.createElement('button');
+			submitBtn.type = 'submit';
+			submitBtn.className = 'btn btn-primary';
+			submitBtn.textContent = submitText;
+			footer.appendChild(cancelBtn);
+			footer.appendChild(submitBtn);
+
+			form.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const formData = new FormData(form);
+				const data = {};
+				for (const [key, value] of formData.entries()) {
+					data[key] = value;
+				}
+				if (onSubmit) await onSubmit(data);
+			});
+
+			return { form, footer };
+		}
+
+		// Accessible confirmation dialog
+		showConfirmation(message, { title = 'Confirmação', confirmText = 'Confirmar', type = 'warning' } = {}) {
+			return new Promise((resolve) => {
+				const content = document.createElement('div');
+				content.innerHTML = `<p>${message}</p>`;
+
+				const footer = document.createElement('div');
+				const cancel = document.createElement('button');
+				cancel.className = 'btn btn-secondary';
+				cancel.textContent = 'Cancelar';
+				cancel.addEventListener('click', () => { this.closeModal(); resolve(false); });
+				const confirm = document.createElement('button');
+				confirm.className = `btn ${type === 'danger' ? 'btn-danger' : type === 'success' ? 'btn-success' : 'btn-warning'}`;
+				confirm.textContent = confirmText;
+				confirm.addEventListener('click', () => { this.closeModal(); resolve(true); });
+				footer.appendChild(cancel);
+				footer.appendChild(confirm);
+
+				this.showModal({ title, content, footer });
+			});
+		}
+
+		// Form error helper
+		showFieldError(fieldName, message) {
+			this.showToast(message, 'error');
+			const field = document.querySelector(`[name="${fieldName}"]`);
+			if (field) {
+				field.setAttribute('aria-invalid', 'true');
+				field.focus({ preventScroll: true });
+			}
+		}
+	}
+
+	window.UI = new UIManager();
+})();
 

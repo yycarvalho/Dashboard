@@ -185,7 +185,7 @@ class RelatoriosManager {
                 datasets: [{
                     label: 'Vendas',
                     data: data.values || [],
-                    borderColor: 'var(--primary-color)',
+                    borderColor: getCssVar('--primary-color'),
                     backgroundColor: 'rgba(106, 90, 249, 0.1)',
                     borderWidth: 3,
                     fill: true,
@@ -280,8 +280,8 @@ class RelatoriosManager {
                 datasets: [{
                     label: 'Pedidos por Hora',
                     data: data.values || [],
-                    backgroundColor: 'var(--info)',
-                    borderColor: 'var(--info)',
+                    backgroundColor: getCssVar('--primary-color'),
+                    borderColor: getCssVar('--primary-color'),
                     borderWidth: 1
                 }]
             },

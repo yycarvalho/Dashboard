@@ -211,3 +211,15 @@ window.isValidEmail = isValidEmail;
 window.isValidPhone = isValidPhone;
 window.generateId = generateId;
 
+// Função para ler variável CSS resolvida
+function getCssVar(varName) {
+    try {
+        return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    } catch (e) {
+        return '';
+    }
+}
+
+// Exportar utilitário de CSS vars
+window.getCssVar = getCssVar;
+
