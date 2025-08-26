@@ -164,6 +164,22 @@ class ApiClient {
     addResponseInterceptor(interceptor) {
         this.responseInterceptors.push(interceptor);
     }
+
+    // Retry automático para falhas de rede
+    async requestWithRetry(method, endpoint, data = null, options = {}, maxRetries = 3) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                return await this.request(method, endpoint, data, options);
+            } catch (error) {
+                if (error.type === 'NETWORK_ERROR' && attempt < maxRetries) {
+                    const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    continue;
+                }
+                throw error;
+            }
+        }
+    }
 }
 
 /**
@@ -327,10 +343,25 @@ class ApiService {
         return response.data;
     }
 
-    async addChatMessage(orderId, message) {
-        const response = await this.client.post(CONFIG.ENDPOINTS.ORDERS.CHAT, { message }, {
-            params: { id: orderId }
+    async addChatMessage(orderId, message, sender = 'system', senderName = 'Sistema') {
+        const response = await this.client.post(CONFIG.ENDPOINTS.ORDERS.CHAT, { 
+            orderId, 
+            message, 
+            sender, 
+            senderName 
         });
+        return response.data;
+    }
+
+    async getChatHistory(orderId) {
+        const response = await this.client.get(CONFIG.ENDPOINTS.ORDERS.CHAT, {
+            params: { orderId }
+        });
+        return response.data;
+    }
+
+    async getChatStats() {
+        const response = await this.client.get('/chat/stats');
         return response.data;
     }
 

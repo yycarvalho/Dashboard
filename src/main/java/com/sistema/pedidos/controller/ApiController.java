@@ -1,9 +1,11 @@
 package com.sistema.pedidos.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sistema.pedidos.config.AppConfig;
 import com.sistema.pedidos.dto.ApiResponse;
 import com.sistema.pedidos.dto.LoginRequest;
 import com.sistema.pedidos.dto.LoginResponse;
+import com.sistema.pedidos.middleware.SecurityMiddleware;
 import com.sistema.pedidos.model.Order;
 import com.sistema.pedidos.model.Product;
 import com.sistema.pedidos.model.Profile;
@@ -38,8 +40,11 @@ public class ApiController {
     private final ProductService productService;
     private final OrderService orderService;
     private final MetricsService metricsService;
+    private final ChatService chatService;
+    private final long startTime;
     
     public ApiController() {
+        this.startTime = System.currentTimeMillis();
         this.objectMapper = new ObjectMapper();
         // Configurar ObjectMapper para suportar LocalDateTime
         this.objectMapper.findAndRegisterModules();
@@ -52,34 +57,44 @@ public class ApiController {
         this.orderService = new OrderService(productService);
         this.metricsService = new MetricsService(orderService, productService);
         this.authService = new AuthService(userService, profileService);
+        this.chatService = new ChatService();
     }
 
     /**
      * Inicia o servidor HTTP
      */
     public void start(int port) throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
+        // Inicializar configurações de produção
+        AppConfig.initializeLogging();
+        AppConfig.validateProductionConfig();
         
-        // Configurar rotas
-        server.createContext("/api/auth/login", new LoginHandler());
-        server.createContext("/api/auth/logout", new LogoutHandler());
-        server.createContext("/api/auth/validate", new ValidateTokenHandler());
+        HttpServer server = HttpServer.create(new InetSocketAddress(AppConfig.getHost(), port), 0);
         
-        server.createContext("/api/users", new UsersHandler());
-        server.createContext("/api/profiles", new ProfilesHandler());
-        server.createContext("/api/products", new ProductsHandler());
-        server.createContext("/api/orders", new OrdersHandler());
-        server.createContext("/api/metrics/dashboard", new DashboardMetricsHandler());
-        server.createContext("/api/metrics/reports", new ReportsHandler());
+        // Configurar rotas com middleware de segurança
+        server.createContext("/api/auth/login", SecurityMiddleware.publicEndpoint(new LoginHandler()));
+        server.createContext("/api/auth/logout", SecurityMiddleware.requireAuth(new LogoutHandler()));
+        server.createContext("/api/auth/validate", SecurityMiddleware.requireAuth(new ValidateTokenHandler()));
         
-        // Handler para CORS
-        server.createContext("/", new CorsHandler());
+        server.createContext("/api/users", SecurityMiddleware.requireAuth(new UsersHandler()));
+        server.createContext("/api/profiles", SecurityMiddleware.requireAuth(new ProfilesHandler()));
+        server.createContext("/api/products", SecurityMiddleware.requireAuth(new ProductsHandler()));
+        server.createContext("/api/orders", SecurityMiddleware.requireAuth(new OrdersHandler()));
+        server.createContext("/api/orders/chat", SecurityMiddleware.requireAuth(new ChatHandler()));
+        server.createContext("/api/metrics/dashboard", SecurityMiddleware.requireAuth(new DashboardMetricsHandler()));
+        server.createContext("/api/metrics/reports", SecurityMiddleware.requireAuth(new ReportsHandler()));
+        server.createContext("/api/health", SecurityMiddleware.publicEndpoint(new HealthCheckHandler()));
         
-        server.setExecutor(null);
+        // Configurar executor com pool de threads
+        server.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(AppConfig.MAX_CONNECTIONS));
+        
         server.start();
         
+        System.out.println("=== Sistema de Pedidos API ===");
         System.out.println("Servidor iniciado na porta " + port);
-        System.out.println("API disponível em: http://localhost:" + port + "/api");
+        System.out.println("Host: " + AppConfig.getHost());
+        System.out.println("Modo: " + (AppConfig.isProduction() ? "PRODUÇÃO" : "DESENVOLVIMENTO"));
+        System.out.println("API disponível em: http://" + AppConfig.getHost() + ":" + port + "/api");
+        System.out.println("Logs: " + AppConfig.LOG_FILE);
     }
 
     /**
@@ -560,6 +575,100 @@ public class ApiController {
                 
             } catch (Exception e) {
                 sendJsonResponse(exchange, 500, ApiResponse.error("Erro interno do servidor"));
+            }
+        }
+    }
+
+    /**
+     * Handler para operações de chat
+     */
+    private class ChatHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            try {
+                String method = exchange.getRequestMethod();
+                
+                switch (method) {
+                    case "GET":
+                        handleGetChat(exchange);
+                        break;
+                    case "POST":
+                        handlePostChat(exchange);
+                        break;
+                    default:
+                        sendJsonResponse(exchange, 405, ApiResponse.error("Método não permitido"));
+                }
+                
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 500, ApiResponse.error("Erro interno do servidor"));
+            }
+        }
+        
+        private void handleGetChat(HttpExchange exchange) throws IOException {
+            String query = exchange.getRequestURI().getQuery();
+            String orderId = null;
+            
+            if (query != null && query.contains("orderId=")) {
+                String[] params = query.split("&");
+                for (String param : params) {
+                    if (param.startsWith("orderId=")) {
+                        orderId = param.split("=")[1];
+                        break;
+                    }
+                }
+            }
+            
+            if (orderId == null) {
+                sendJsonResponse(exchange, 400, ApiResponse.error("orderId é obrigatório"));
+                return;
+            }
+            
+            List<Order.ChatMessage> chatHistory = chatService.getChatHistory(orderId);
+            sendJsonResponse(exchange, 200, chatHistory);
+        }
+        
+        private void handlePostChat(HttpExchange exchange) throws IOException {
+            String requestBody = readRequestBody(exchange);
+            Map<String, Object> request = objectMapper.readValue(requestBody, Map.class);
+            
+            String orderId = (String) request.get("orderId");
+            String message = (String) request.get("message");
+            String sender = (String) request.get("sender");
+            String senderName = (String) request.get("senderName");
+            
+            if (orderId == null || message == null || sender == null) {
+                sendJsonResponse(exchange, 400, ApiResponse.error("orderId, message e sender são obrigatórios"));
+                return;
+            }
+            
+            Order.ChatMessage chatMessage = chatService.addMessage(orderId, message, sender, senderName);
+            sendJsonResponse(exchange, 201, chatMessage);
+        }
+    }
+
+    /**
+     * Handler para health check
+     */
+    private class HealthCheckHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            try {
+                Map<String, Object> healthStatus = new HashMap<>();
+                healthStatus.put("status", "OK");
+                healthStatus.put("timestamp", java.time.LocalDateTime.now().toString());
+                healthStatus.put("version", "3.0");
+                healthStatus.put("environment", AppConfig.isProduction() ? "production" : "development");
+                healthStatus.put("uptime", System.currentTimeMillis() - startTime);
+                
+                sendJsonResponse(exchange, 200, healthStatus);
+                
+            } catch (Exception e) {
+                Map<String, Object> errorStatus = new HashMap<>();
+                errorStatus.put("status", "ERROR");
+                errorStatus.put("timestamp", java.time.LocalDateTime.now().toString());
+                errorStatus.put("error", e.getMessage());
+                
+                sendJsonResponse(exchange, 500, errorStatus);
             }
         }
     }
