@@ -21,26 +21,54 @@ class DashboardManager {
     // Renderizar estrutura do dashboard
     render() {
         this.container.innerHTML = `
-            <div class="section-header">
-                <h2>Dashboard</h2>
+            <header class="section-header">
+                <div class="header-content">
+                    <h2 id="dashboard-title">Dashboard</h2>
+                    <p class="section-subtitle">Visão geral do sistema de pedidos</p>
+                </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="window.DashboardManager.refresh()">
-                        <i class="fas fa-sync-alt"></i>
-                        Atualizar
+                    <button 
+                        class="btn btn-secondary btn-sm" 
+                        onclick="window.DashboardManager.refresh()"
+                        aria-label="Atualizar dados do dashboard"
+                        title="Atualizar dados"
+                    >
+                        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                        <span>Atualizar</span>
                     </button>
                 </div>
-            </div>
+            </header>
 
-            <div class="metrics-grid" id="metricsGrid">
-                <div class="loading-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    Carregando métricas...
-                </div>
-            </div>
+            <main class="dashboard-content" role="main" aria-labelledby="dashboard-title">
+                <!-- Métricas Principais -->
+                <section class="metrics-section" aria-labelledby="metrics-title">
+                    <h3 id="metrics-title" class="section-title">Métricas do Dia</h3>
+                    <div class="metrics-grid" id="metricsGrid" role="group" aria-label="Métricas principais">
+                        <div class="loading-state" role="status" aria-live="polite">
+                            <div class="loading-spinner" aria-hidden="true">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <span>Carregando métricas...</span>
+                        </div>
+                    </div>
+                </section>
 
-            <div class="charts-grid" id="chartsGrid">
-                <!-- Gráficos serão carregados aqui -->
-            </div>
+                <!-- Gráficos e Análises -->
+                <section class="charts-section" aria-labelledby="charts-title">
+                    <h3 id="charts-title" class="section-title">Análises e Gráficos</h3>
+                    <div class="charts-grid" id="chartsGrid" role="group" aria-label="Gráficos e análises">
+                        <!-- Gráficos serão carregados aqui -->
+                    </div>
+                </section>
+
+                <!-- Resumo de Atividades -->
+                <section class="activity-section" aria-labelledby="activity-title">
+                    <h3 id="activity-title" class="section-title">Atividades Recentes</h3>
+                    <div class="activity-feed" id="activityFeed" role="log" aria-label="Feed de atividades recentes">
+                        <!-- Atividades serão carregadas aqui -->
+                    </div>
+                </section>
+            </main>
         `;
         
         // Carregar dados automaticamente
@@ -78,37 +106,48 @@ class DashboardManager {
                 title: 'Pedidos Hoje',
                 value: this.metrics.totalPedidosHoje || 0,
                 icon: 'fas fa-clipboard-list',
-                color: 'var(--primary-color)'
+                color: 'var(--primary-color)',
+                description: 'Total de pedidos recebidos hoje'
             },
             {
                 title: 'Faturamento Hoje',
                 value: formatCurrency(this.metrics.valorTotalArrecadado || 0),
                 icon: 'fas fa-dollar-sign',
-                color: 'var(--success)'
+                color: 'var(--success)',
+                description: 'Receita total do dia atual'
             },
             {
                 title: 'Pedidos em Preparo',
                 value: this.metrics.pedidosPorStatus?.preparo || 0,
                 icon: 'fas fa-fire',
-                color: 'var(--warning)'
+                color: 'var(--warning)',
+                description: 'Pedidos sendo preparados'
             },
             {
                 title: 'Pedidos Finalizados',
                 value: this.metrics.pedidosPorStatus?.finalizado || 0,
                 icon: 'fas fa-check-circle',
-                color: 'var(--success)'
+                color: 'var(--success)',
+                description: 'Pedidos concluídos hoje'
             }
         ];
 
-        metricsGrid.innerHTML = metricsData.map(metric => `
-            <div class="metric-card">
-                <div class="metric-header">
-                    <i class="${metric.icon}" style="color: ${metric.color}"></i>
-                    <h3>${metric.title}</h3>
+        metricsGrid.innerHTML = metricsData.map((metric, index) => `
+            <article class="metric-card" role="article" aria-labelledby="metric-title-${index}">
+                <header class="metric-header">
+                    <i class="${metric.icon}" style="color: ${metric.color}" aria-hidden="true"></i>
+                    <h4 id="metric-title-${index}" class="metric-title">${metric.title}</h4>
+                </header>
+                <div class="metric-content">
+                    <div class="metric-value" aria-label="Valor: ${metric.value}">${metric.value}</div>
+                    <div class="metric-description">${metric.description}</div>
                 </div>
-                <div class="value">${metric.value}</div>
-                <div class="description">Atualizado agora</div>
-            </div>
+                <footer class="metric-footer">
+                    <time datetime="${new Date().toISOString()}" class="update-time">
+                        Atualizado agora
+                    </time>
+                </footer>
+            </article>
         `).join('');
     }
 
@@ -118,14 +157,37 @@ class DashboardManager {
         if (!chartsGrid) return;
 
         chartsGrid.innerHTML = `
-            <div class="chart-container">
-                <h3>Pedidos por Status</h3>
-                <canvas id="statusChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h3>Faturamento Mensal</h3>
-                <canvas id="revenueChart"></canvas>
-            </div>
+            <article class="chart-container" role="img" aria-labelledby="status-chart-title">
+                <header class="chart-header">
+                    <h4 id="status-chart-title" class="chart-title">Pedidos por Status</h4>
+                    <p class="chart-description">Distribuição atual dos pedidos por status</p>
+                </header>
+                <div class="chart-content">
+                    <canvas 
+                        id="statusChart" 
+                        role="img" 
+                        aria-label="Gráfico de pizza mostrando distribuição de pedidos por status"
+                        width="400" 
+                        height="300"
+                    ></canvas>
+                </div>
+            </article>
+            
+            <article class="chart-container" role="img" aria-labelledby="revenue-chart-title">
+                <header class="chart-header">
+                    <h4 id="revenue-chart-title" class="chart-title">Faturamento Mensal</h4>
+                    <p class="chart-description">Evolução do faturamento ao longo do mês</p>
+                </header>
+                <div class="chart-content">
+                    <canvas 
+                        id="revenueChart" 
+                        role="img" 
+                        aria-label="Gráfico de linha mostrando evolução do faturamento mensal"
+                        width="400" 
+                        height="300"
+                    ></canvas>
+                </div>
+            </article>
         `;
 
         // Renderizar gráfico de status

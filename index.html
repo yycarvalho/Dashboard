@@ -3,31 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sistema de Gestão de Pedidos - Plataforma completa para gerenciamento de pedidos, cardápio e entregas">
-    <meta name="keywords" content="gestão de pedidos, sistema de pedidos, cardápio, entregas">
+    <meta name="description" content="Sistema de Gestão de Pedidos - Plataforma completa para gerenciamento de pedidos, cardápio e entregas com interface moderna e responsiva">
+    <meta name="keywords" content="gestão de pedidos, sistema de pedidos, cardápio, entregas, restaurante, delivery">
     <meta name="author" content="Sistema de Pedidos">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#6a5af9">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="Sistema de Gestão de Pedidos">
+    <meta property="og:description" content="Plataforma completa para gerenciamento de pedidos, cardápio e entregas">
+    <meta property="og:image" content="">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="">
+    <meta property="twitter:title" content="Sistema de Gestão de Pedidos">
+    <meta property="twitter:description" content="Plataforma completa para gerenciamento de pedidos, cardápio e entregas">
+    <meta property="twitter:image" content="">
     
     <title>Sistema de Gestão de Pedidos</title>
+    
+    <!-- DNS Prefetch para otimização de performance -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
     
     <!-- Preconnect para otimização de performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     
-    <!-- Fontes e ícones -->
+    <!-- Fontes e ícones com display=swap para melhor performance -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Estilos -->
-    <link rel="stylesheet" href="../css/reset.css">
-    <link rel="stylesheet" href="../css/variables.css">
-    <link rel="stylesheet" href="../css/components.css">
-    <link rel="stylesheet" href="../css/layout.css">
-    <link rel="stylesheet" href="../css/responsive.css">
+    <!-- Estilos - caminhos corrigidos -->
+    <link rel="stylesheet" href="reset.css">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="components.css">
+    <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="responsive.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Preload de recursos críticos -->
+    <link rel="preload" href="app.js" as="script">
+    <link rel="preload" href="config.js" as="script">
 </head>
 <body>
+    <!-- Skip to main content para acessibilidade -->
+    <a href="#main-content" class="skip-link sr-only" tabindex="0">Pular para o conteúdo principal</a>
+    
     <!-- Tela de Login -->
-    <section id="loginScreen" class="login-screen" aria-label="Tela de autenticação">
+    <section id="loginScreen" class="login-screen" aria-label="Tela de autenticação" role="main">
         <div class="login-container">
             <header class="login-header">
                 <i class="fas fa-utensils" aria-hidden="true"></i>
@@ -35,7 +65,9 @@
                 <p>Faça login para continuar</p>
             </header>
             
-            <form id="loginForm" class="login-form" novalidate>
+            <form id="loginForm" class="login-form" novalidate aria-labelledby="login-title">
+                <h2 id="login-title" class="sr-only">Formulário de Login</h2>
+                
                 <div class="form-group">
                     <label for="username">Usuário</label>
                     <input 
@@ -46,6 +78,7 @@
                         required 
                         autocomplete="username"
                         aria-describedby="username-error"
+                        aria-invalid="false"
                     >
                     <span id="username-error" class="error-message" role="alert" aria-live="polite"></span>
                 </div>
@@ -60,6 +93,7 @@
                         required 
                         autocomplete="current-password"
                         aria-describedby="password-error"
+                        aria-invalid="false"
                     >
                     <span id="password-error" class="error-message" role="alert" aria-live="polite"></span>
                 </div>
@@ -101,6 +135,7 @@
                         placeholder="Buscar pedidos..." 
                         id="searchInput"
                         aria-label="Campo de busca de pedidos"
+                        autocomplete="off"
                     >
                 </div>
                 
@@ -109,37 +144,37 @@
                     <span id="currentProfile" class="user-profile">Perfil</span>
                 </div>
                 
-                <button class="logout-btn" id="logoutBtn" title="Sair do sistema" aria-label="Sair">
+                <button class="logout-btn" id="logoutBtn" title="Sair do sistema" aria-label="Sair do sistema">
                     <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                 </button>
             </div>
         </header>
 
         <!-- Sidebar (Desktop) -->
-        <aside class="sidebar" role="navigation" aria-label="Menu principal">
+        <aside class="sidebar" role="navigation" aria-label="Menu principal de navegação">
             <div class="sidebar-header">
                 <i class="fas fa-utensils" aria-hidden="true"></i>
                 <span>Sistema de Pedidos</span>
             </div>
             
-            <nav class="nav-menu">
-                <a href="#" class="nav-item active" data-section="dashboard" role="menuitem" aria-current="page">
+            <nav class="nav-menu" role="menubar">
+                <a href="#dashboard" class="nav-item active" data-section="dashboard" role="menuitem" aria-current="page" tabindex="0">
                     <i class="fas fa-chart-pie" aria-hidden="true"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" class="nav-item" data-section="pedidos" role="menuitem">
+                <a href="#pedidos" class="nav-item" data-section="pedidos" role="menuitem" tabindex="0">
                     <i class="fas fa-clipboard-list" aria-hidden="true"></i>
                     <span>Pedidos</span>
                 </a>
-                <a href="#" class="nav-item" data-section="cardapio" role="menuitem">
+                <a href="#cardapio" class="nav-item" data-section="cardapio" role="menuitem" tabindex="0">
                     <i class="fas fa-book-open" aria-hidden="true"></i>
                     <span>Cardápio</span>
                 </a>
-                <a href="#" class="nav-item" data-section="relatorios" role="menuitem">
+                <a href="#relatorios" class="nav-item" data-section="relatorios" role="menuitem" tabindex="0">
                     <i class="fas fa-chart-bar" aria-hidden="true"></i>
                     <span>Relatórios</span>
                 </a>
-                <a href="#" class="nav-item" data-section="perfis" role="menuitem">
+                <a href="#perfis" class="nav-item" data-section="perfis" role="menuitem" tabindex="0">
                     <i class="fas fa-users-cog" aria-hidden="true"></i>
                     <span>Perfis</span>
                 </a>
@@ -147,48 +182,77 @@
         </aside>
 
         <!-- Conteúdo Principal -->
-        <main class="main-content" role="main">
-            <!-- Seções de conteúdo -->
-            <section id="dashboardSection" class="content-section active" aria-label="Dashboard">
-                <!-- Conteúdo do dashboard será carregado via JavaScript -->
+        <main id="main-content" class="main-content" role="main" tabindex="-1">
+            <!-- Dashboard Section -->
+            <section id="dashboardSection" class="content-section active" aria-label="Painel de controle principal">
+                <div class="section-loading" aria-live="polite" aria-label="Carregando dashboard">
+                    <div class="loading-spinner" aria-hidden="true">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <span>Carregando dashboard...</span>
+                </div>
             </section>
             
+            <!-- Pedidos Section -->
             <section id="pedidosSection" class="content-section" aria-label="Gerenciamento de pedidos">
-                <!-- Conteúdo de pedidos será carregado via JavaScript -->
+                <div class="section-loading" aria-live="polite" aria-label="Carregando pedidos">
+                    <div class="loading-spinner" aria-hidden="true">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <span>Carregando pedidos...</span>
+                </div>
             </section>
             
+            <!-- Cardápio Section -->
             <section id="cardapioSection" class="content-section" aria-label="Gerenciamento do cardápio">
-                <!-- Conteúdo do cardápio será carregado via JavaScript -->
+                <div class="section-loading" aria-live="polite" aria-label="Carregando cardápio">
+                    <div class="loading-spinner" aria-hidden="true">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <span>Carregando cardápio...</span>
+                </div>
             </section>
             
+            <!-- Relatórios Section -->
             <section id="relatoriosSection" class="content-section" aria-label="Relatórios e análises">
-                <!-- Conteúdo de relatórios será carregado via JavaScript -->
+                <div class="section-loading" aria-live="polite" aria-label="Carregando relatórios">
+                    <div class="loading-spinner" aria-hidden="true">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <span>Carregando relatórios...</span>
+                </div>
             </section>
             
-            <section id="perfisSection" class="content-section" aria-label="Gerenciamento de perfis">
-                <!-- Conteúdo de perfis será carregado via JavaScript -->
+            <!-- Perfis Section -->
+            <section id="perfisSection" class="content-section" aria-label="Gerenciamento de usuários e perfis">
+                <div class="section-loading" aria-live="polite" aria-label="Carregando perfis">
+                    <div class="loading-spinner" aria-hidden="true">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <span>Carregando perfis...</span>
+                </div>
             </section>
         </main>
 
         <!-- Bottom Nav (Mobile) -->
-        <nav class="bottom-nav" role="navigation" aria-label="Menu mobile">
-            <a href="#" class="nav-item active" data-section="dashboard" role="menuitem" aria-current="page">
+        <nav class="bottom-nav" role="navigation" aria-label="Menu de navegação mobile">
+            <a href="#dashboard" class="nav-item active" data-section="dashboard" role="menuitem" aria-current="page" tabindex="0">
                 <i class="fas fa-chart-pie" aria-hidden="true"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="#" class="nav-item" data-section="pedidos" role="menuitem">
+            <a href="#pedidos" class="nav-item" data-section="pedidos" role="menuitem" tabindex="0">
                 <i class="fas fa-clipboard-list" aria-hidden="true"></i>
                 <span>Pedidos</span>
             </a>
-            <a href="#" class="nav-item" data-section="cardapio" role="menuitem">
+            <a href="#cardapio" class="nav-item" data-section="cardapio" role="menuitem" tabindex="0">
                 <i class="fas fa-book-open" aria-hidden="true"></i>
                 <span>Cardápio</span>
             </a>
-            <a href="#" class="nav-item" data-section="relatorios" role="menuitem">
+            <a href="#relatorios" class="nav-item" data-section="relatorios" role="menuitem" tabindex="0">
                 <i class="fas fa-chart-bar" aria-hidden="true"></i>
                 <span>Relatórios</span>
             </a>
-            <a href="#" class="nav-item" data-section="perfis" role="menuitem">
+            <a href="#perfis" class="nav-item" data-section="perfis" role="menuitem" tabindex="0">
                 <i class="fas fa-users-cog" aria-hidden="true"></i>
                 <span>Perfis</span>
             </a>
@@ -196,28 +260,28 @@
     </div>
 
     <!-- Container para Modais -->
-    <div id="modalContainer" role="dialog" aria-hidden="true"></div>
+    <div id="modalContainer" role="dialog" aria-hidden="true" aria-modal="true"></div>
 
     <!-- Loading Global -->
-    <div id="loading" class="loading hidden" role="status" aria-label="Carregando">
+    <div id="loading" class="loading hidden" role="status" aria-label="Carregando sistema">
         <div class="spinner" aria-hidden="true"></div>
-        <span class="sr-only">Carregando...</span>
+        <span class="sr-only">Carregando sistema...</span>
     </div>
 
     <!-- Toast Notifications -->
-    <div id="toastContainer" class="toast-container" role="region" aria-label="Notificações" aria-live="polite"></div>
+    <div id="toastContainer" class="toast-container" role="region" aria-label="Área de notificações" aria-live="polite"></div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../js/config.js"></script>
-    <script src="../js/api.js"></script>
-    <script src="../js/auth.js"></script>
-    <script src="../js/ui.js"></script>
-    <script src="../js/dashboard.js"></script>
-    <script src="../js/pedidos.js"></script>
-    <script src="../js/cardapio.js"></script>
-    <script src="../js/relatorios.js"></script>
-    <script src="../js/perfis.js"></script>
-    <script src="../js/app.js"></script>
+    <!-- Scripts com loading otimizado -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="config.js" defer></script>
+    <script src="api.js" defer></script>
+    <script src="auth.js" defer></script>
+    <script src="ui.js" defer></script>
+    <script src="dashboard.js" defer></script>
+    <script src="pedidos.js" defer></script>
+    <script src="cardapio.js" defer></script>
+    <script src="relatorios.js" defer></script>
+    <script src="perfis.js" defer></script>
+    <script src="app.js" defer></script>
 </body>
 </html>
