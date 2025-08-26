@@ -23,30 +23,63 @@ class PedidosManager {
     // Renderizar estrutura da seção de pedidos
     render() {
         this.container.innerHTML = `
-            <div class="section-header">
-                <h2>Pedidos</h2>
+            <header class="section-header">
+                <div class="header-content">
+                    <h2 id="orders-title">Pedidos</h2>
+                    <p class="section-subtitle">Gerenciamento completo de pedidos do sistema</p>
+                </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="window.PedidosManager.refresh()">
-                        <i class="fas fa-sync-alt"></i>
-                        Atualizar
+                    <button 
+                        class="btn btn-secondary btn-sm" 
+                        onclick="window.PedidosManager.refresh()"
+                        aria-label="Atualizar lista de pedidos"
+                        title="Atualizar pedidos"
+                    >
+                        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                        <span>Atualizar</span>
                     </button>
-                    <button class="btn btn-primary" onclick="window.PedidosManager.showCreateModal()">
-                        <i class="fas fa-plus"></i>
-                        Novo Pedido
+                    <button 
+                        class="btn btn-primary" 
+                        onclick="window.PedidosManager.showCreateModal()"
+                        aria-label="Criar novo pedido"
+                        title="Novo pedido"
+                    >
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        <span>Novo Pedido</span>
                     </button>
                 </div>
-            </div>
+            </header>
 
-            <div class="orders-filters" id="ordersFilters">
-                <!-- Filtros serão carregados aqui -->
-            </div>
+            <main class="orders-content" role="main" aria-labelledby="orders-title">
+                <!-- Filtros e Busca -->
+                <section class="filters-section" aria-labelledby="filters-title">
+                    <h3 id="filters-title" class="sr-only">Filtros de pedidos</h3>
+                    <div class="orders-filters" id="ordersFilters" role="group" aria-label="Filtros de status de pedidos">
+                        <!-- Filtros serão carregados aqui -->
+                    </div>
+                </section>
 
-            <div class="orders-list" id="ordersList">
-                <div class="loading-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    Carregando pedidos...
-                </div>
-            </div>
+                <!-- Lista de Pedidos -->
+                <section class="orders-section" aria-labelledby="orders-list-title">
+                    <h3 id="orders-list-title" class="sr-only">Lista de pedidos</h3>
+                    <div class="orders-list" id="ordersList" role="region" aria-live="polite" aria-label="Lista de pedidos">
+                        <div class="loading-state" role="status" aria-live="polite">
+                            <div class="loading-spinner" aria-hidden="true">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <span>Carregando pedidos...</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Kanban Board (Opcional) -->
+                <section class="kanban-section hidden" aria-labelledby="kanban-title">
+                    <h3 id="kanban-title" class="sr-only">Quadro Kanban de pedidos</h3>
+                    <div class="kanban-board" id="kanbanBoard" role="group" aria-label="Quadro Kanban de pedidos">
+                        <!-- Kanban será carregado aqui -->
+                    </div>
+                </section>
+            </main>
         `;
         
         // Carregar dados automaticamente
@@ -78,37 +111,85 @@ class PedidosManager {
 
         if (this.orders.length === 0) {
             ordersList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-clipboard-list"></i>
+                <div class="empty-state" role="status">
+                    <i class="fas fa-clipboard-list" aria-hidden="true"></i>
                     <h3>Nenhum pedido encontrado</h3>
                     <p>Não há pedidos para exibir no momento.</p>
+                    <button class="btn btn-primary" onclick="window.PedidosManager.showCreateModal()">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Criar primeiro pedido
+                    </button>
                 </div>
             `;
             return;
         }
 
-        ordersList.innerHTML = this.orders.map(order => `
-            <div class="order-card">
-                <div class="order-header">
-                    <div class="order-id">#${order.id}</div>
-                    <div class="order-status status-${order.status}">${order.status}</div>
+        ordersList.innerHTML = this.orders.map((order, index) => `
+            <article class="order-card" role="article" aria-labelledby="order-title-${order.id}" tabindex="0">
+                <header class="order-header">
+                    <h4 id="order-title-${order.id}" class="order-id">#${order.id}</h4>
+                    <div class="order-status status-${order.status}" 
+                         role="status" 
+                         aria-label="Status do pedido: ${order.status}">
+                        ${order.status}
+                    </div>
+                </header>
+                
+                <div class="order-content">
+                    <section class="order-details" aria-labelledby="details-title-${order.id}">
+                        <h5 id="details-title-${order.id}" class="sr-only">Detalhes do pedido</h5>
+                        <dl class="details-list">
+                            <dt>Cliente:</dt>
+                            <dd>${order.customer}</dd>
+                            <dt>Telefone:</dt>
+                            <dd><a href="tel:${order.phone}" aria-label="Ligar para ${order.customer}">${order.phone}</a></dd>
+                            <dt>Tipo:</dt>
+                            <dd>${order.type}</dd>
+                            <dt>Total:</dt>
+                            <dd class="order-total" aria-label="Valor total: ${formatCurrency(order.total)}">
+                                ${formatCurrency(order.total)}
+                            </dd>
+                            <dt>Criado em:</dt>
+                            <dd>
+                                <time datetime="${order.createdAt}" title="${formatDate(order.createdAt)}">
+                                    ${formatDate(order.createdAt)}
+                                </time>
+                            </dd>
+                        </dl>
+                    </section>
+
+                    <section class="order-items" aria-labelledby="items-title-${order.id}">
+                        <h5 id="items-title-${order.id}" class="items-title">Itens do pedido:</h5>
+                        <ul class="items-list" role="list">
+                            ${order.items.map(item => `
+                                <li class="order-item" role="listitem">
+                                    <span class="item-quantity" aria-label="${item.quantity} unidades">${item.quantity}x</span>
+                                    <span class="item-name">${item.productName}</span>
+                                    <span class="item-price" aria-label="Preço: ${formatCurrency(item.price)}">
+                                        ${formatCurrency(item.price)}
+                                    </span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </section>
                 </div>
-                <div class="order-details">
-                    <div><strong>Cliente:</strong> ${order.customer}</div>
-                    <div><strong>Telefone:</strong> ${order.phone}</div>
-                    <div><strong>Tipo:</strong> ${order.type}</div>
-                    <div><strong>Total:</strong> R$ ${order.total.toFixed(2)}</div>
-                    <div><strong>Criado:</strong> ${formatDate(order.createdAt)}</div>
-                </div>
-                <div class="order-items">
-                    <strong>Itens:</strong>
-                    ${order.items.map(item => `
-                        <div class="order-item">
-                            ${item.quantity}x ${item.productName} - R$ ${item.price.toFixed(2)}
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
+
+                <footer class="order-actions">
+                    <button class="btn btn-sm btn-secondary" 
+                            onclick="window.PedidosManager.viewOrder('${order.id}')"
+                            aria-label="Ver detalhes do pedido ${order.id}">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                        Ver
+                    </button>
+                    <button class="btn btn-sm btn-primary" 
+                            onclick="window.PedidosManager.editOrder('${order.id}')"
+                            aria-label="Editar pedido ${order.id}">
+                        <i class="fas fa-edit" aria-hidden="true"></i>
+                        Editar
+                    </button>
+                    ${this.getStatusActions(order)}
+                </footer>
+            </article>
         `).join('');
     }
 
@@ -121,18 +202,55 @@ class PedidosManager {
 
         filtersContainer.innerHTML = `
             <div class="filters-row">
-                <div class="filter-buttons">
-                    <button class="filter-btn ${this.currentFilter === 'all' ? 'active' : ''}" 
-                            onclick="window.PedidosManager.setFilter('all')">
-                        Todos (${this.orders.length})
+                <div class="filter-buttons" role="group" aria-label="Filtros de status de pedidos">
+                    <button 
+                        class="filter-btn ${this.currentFilter === 'all' ? 'active' : ''}" 
+                        onclick="window.PedidosManager.setFilter('all')"
+                        aria-pressed="${this.currentFilter === 'all'}"
+                        aria-label="Mostrar todos os pedidos (${this.orders.length})"
+                    >
+                        <span>Todos</span>
+                        <span class="filter-count">(${this.orders.length})</span>
                     </button>
                     ${CONFIG.ORDER_STATUSES.map(status => `
-                        <button class="filter-btn ${this.currentFilter === status.id ? 'active' : ''}" 
-                                onclick="window.PedidosManager.setFilter('${status.id}')"
-                                style="--status-color: ${status.color}">
-                            ${status.name} (${statusCounts[status.id] || 0})
+                        <button 
+                            class="filter-btn ${this.currentFilter === status.id ? 'active' : ''}" 
+                            onclick="window.PedidosManager.setFilter('${status.id}')"
+                            style="--status-color: ${status.color}"
+                            aria-pressed="${this.currentFilter === status.id}"
+                            aria-label="Filtrar por ${status.name} (${statusCounts[status.id] || 0} pedidos)"
+                        >
+                            <span>${status.name}</span>
+                            <span class="filter-count">(${statusCounts[status.id] || 0})</span>
                         </button>
                     `).join('')}
+                </div>
+                
+                <div class="filter-search">
+                    <label for="orderSearch" class="sr-only">Buscar pedidos</label>
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                        <input 
+                            type="search" 
+                            id="orderSearch"
+                            class="search-input" 
+                            placeholder="Buscar por cliente, telefone ou ID..."
+                            value="${this.searchQuery}"
+                            oninput="window.PedidosManager.handleSearch(this.value)"
+                            aria-label="Campo de busca de pedidos"
+                            autocomplete="off"
+                        >
+                        ${this.searchQuery ? `
+                            <button 
+                                class="clear-search-btn" 
+                                onclick="window.PedidosManager.clearSearch()"
+                                aria-label="Limpar busca"
+                                title="Limpar busca"
+                            >
+                                <i class="fas fa-times" aria-hidden="true"></i>
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
             </div>
         `;
@@ -145,6 +263,88 @@ class PedidosManager {
             counts[order.status] = (counts[order.status] || 0) + 1;
         });
         return counts;
+    }
+
+    // Obter ações de status para um pedido
+    getStatusActions(order) {
+        const actions = [];
+        
+        switch (order.status) {
+            case 'atendimento':
+                actions.push(`
+                    <button class="btn btn-sm btn-warning" 
+                            onclick="window.PedidosManager.updateStatus('${order.id}', 'preparo')"
+                            aria-label="Enviar pedido ${order.id} para preparo">
+                        <i class="fas fa-fire" aria-hidden="true"></i>
+                        Preparo
+                    </button>
+                `);
+                break;
+            case 'preparo':
+                actions.push(`
+                    <button class="btn btn-sm btn-success" 
+                            onclick="window.PedidosManager.updateStatus('${order.id}', 'pronto')"
+                            aria-label="Marcar pedido ${order.id} como pronto">
+                        <i class="fas fa-check" aria-hidden="true"></i>
+                        Pronto
+                    </button>
+                `);
+                break;
+            case 'pronto':
+                actions.push(`
+                    <button class="btn btn-sm btn-primary" 
+                            onclick="window.PedidosManager.updateStatus('${order.id}', 'finalizado')"
+                            aria-label="Finalizar pedido ${order.id}">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        Finalizar
+                    </button>
+                `);
+                break;
+        }
+        
+        return actions.join('');
+    }
+
+    // Manipular busca
+    handleSearch(query) {
+        this.searchQuery = query.toLowerCase();
+        this.applyFilters();
+    }
+
+    // Limpar busca
+    clearSearch() {
+        this.searchQuery = '';
+        document.getElementById('orderSearch').value = '';
+        this.applyFilters();
+    }
+
+    // Aplicar filtros
+    applyFilters() {
+        let filtered = [...this.orders];
+
+        // Filtrar por status
+        if (this.currentFilter !== 'all') {
+            filtered = filtered.filter(order => order.status === this.currentFilter);
+        }
+
+        // Filtrar por busca
+        if (this.searchQuery) {
+            filtered = filtered.filter(order => 
+                order.customer.toLowerCase().includes(this.searchQuery) ||
+                order.phone.includes(this.searchQuery) ||
+                order.id.toString().includes(this.searchQuery)
+            );
+        }
+
+        this.filteredOrders = filtered;
+        this.renderOrdersList();
+        this.renderFilters(); // Re-renderizar filtros para atualizar contadores
+    }
+
+    // Definir filtro
+    setFilter(filter) {
+        this.currentFilter = filter;
+        this.applyFilters();
     }
 
     // Renderizar kanban board
