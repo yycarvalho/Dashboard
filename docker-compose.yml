@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # Sistema de Pedidos API
+  api:
+    build: .
+    container_name: sistema-pedidos-api
+    ports:
+      - "8080:8080"
+    environment:
+      - ENVIRONMENT=production
+      - JWT_SECRET=${JWT_SECRET:-sistema_pedidos_secret_key_2024_producao}
+      - PORT=8080
+      - HOST=0.0.0.0
+      - JAVA_OPTS=-server -Xmx1g -Xms512m -XX:+UseG1GC
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - pedidos-network
+
+  # Nginx para proxy reverso (opcional)
+  nginx:
+    image: nginx:alpine
+    container_name: sistema-pedidos-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - pedidos-network
+
+  # Redis para cache e sessões (futuras implementações)
+  redis:
+    image: redis:alpine
+    container_name: sistema-pedidos-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - pedidos-network
+
+  # PostgreSQL para banco de dados (futuras implementações)
+  postgres:
+    image: postgres:13-alpine
+    container_name: sistema-pedidos-postgres
+    environment:
+      - POSTGRES_DB=pedidos_db
+      - POSTGRES_USER=pedidos_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-senha_super_secreta_2024}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - pedidos-network
+
+networks:
+  pedidos-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  postgres-data:

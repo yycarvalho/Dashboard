@@ -2,8 +2,10 @@
  * Configurações da aplicação
  */
 const CONFIG = {
-    // URL base da API
-    API_BASE_URL: 'http://localhost:8080/api',
+    // URL base da API - Configuração para produção
+    API_BASE_URL: window.location.hostname === 'localhost' ? 
+        'http://localhost:8080/api' : 
+        `${window.location.protocol}//${window.location.hostname}/api`,
     
     // Endpoints da API
     ENDPOINTS: {
@@ -36,7 +38,7 @@ const CONFIG = {
             UPDATE: '/orders',
             DELETE: '/orders',
             UPDATE_STATUS: '/orders/{id}/status',
-            CHAT: '/orders/{id}/chat'
+            CHAT: '/orders/chat'
         },
         METRICS: {
             DASHBOARD: '/metrics/dashboard',
@@ -98,9 +100,9 @@ const CONFIG = {
     
     // Configurações de debug
     DEBUG: {
-        ENABLED: true,
-        LOG_REQUESTS: true,
-        LOG_RESPONSES: true
+        ENABLED: window.location.hostname === 'localhost',
+        LOG_REQUESTS: window.location.hostname === 'localhost',
+        LOG_RESPONSES: window.location.hostname === 'localhost'
     }
 };
 
