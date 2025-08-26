@@ -218,12 +218,12 @@ class DashboardManager {
                 datasets: [{
                     label: 'Faturamento (R$)',
                     data: data,
-                    borderColor: 'var(--primary-color)',
+                    borderColor: getCssVar('--primary-color'),
                     backgroundColor: 'rgba(106, 90, 249, 0.1)',
                     borderWidth: 3,
                     fill: true,
                     tension: 0.4,
-                    pointBackgroundColor: 'var(--primary-color)',
+                    pointBackgroundColor: getCssVar('--primary-color'),
                     pointBorderColor: '#ffffff',
                     pointBorderWidth: 2,
                     pointRadius: 6
